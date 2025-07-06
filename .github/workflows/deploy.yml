@@ -160,10 +160,10 @@ jobs:
             GROQ_API_KEY=${{ secrets.GROQ_API_KEY }}
             INNGEST_EVENT_KEY=${{ secrets.INNGEST_EVENT_KEY }}
             INNGEST_SIGNING_KEY=${{ secrets.INNGEST_SIGNING_KEY }}
-            
+
           script: |
-            set -e # Exit immediately if a command exits with a non-zero status.
-            set -x # Print commands and their arguments as they are executed.
+            set -e
+            set -x
 
             echo "Logging into Docker Hub..."
             echo "${{ secrets.DOCKERHUB_PASSWORD }}" | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
@@ -174,9 +174,9 @@ jobs:
             echo "Docker pull successful"
 
             echo "Attempting to stop existing quantai-app container..."
-            docker stop quantai-app || true # '|| true' allows the script to continue if container doesn't exist
+            docker stop quantai-app || true
             echo "Attempting to remove old quantai-app container..."
-            docker rm quantai-app || true # '|| true' allows the script to continue if container doesn't exist
+            docker rm quantai-app || true
 
             echo "Starting new container..."
             docker run -d \
