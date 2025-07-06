@@ -131,8 +131,6 @@ jobs:
       - name: Push Docker Image
         run: docker push iamamanul/quantai:latest
 
-  
-  # Job to deploy the Docker image to the EC2 instance
   # Job to deploy the Docker image to the EC2 instance
   deploy-to-ec2:
     runs-on: ubuntu-latest
@@ -148,6 +146,8 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           # 🌟🌟🌟 CRITICAL: THIS IS THE 'envs' BLOCK FOR PASSING SECRETS 🌟🌟🌟
           # Ensure 'envs:' is directly under 'with:', and values are indented by 2 spaces
+          # NOTE: These 'envs' are for the SSH action's environment, but we are explicitly
+          # passing them in the docker run command below for robustness.
           envs: |
             NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}
             CLERK_SECRET_KEY=${{ secrets.CLERK_SECRET_KEY }}
@@ -195,46 +195,6 @@ jobs:
               -e INNGEST_SIGNING_KEY=${{ secrets.INNGEST_SIGNING_KEY }} \
               iamamanul/quantai:latest
             echo "Deployment script finished."
-
-# ... (rest of your deploy.yml file) ...
-          # script: |
-          #   set -e # Exit immediately if a command exits with a non-zero status.
-          #   set -x # Print commands and their arguments as they are executed.
-
-          #   echo "Logging into Docker Hub..."
-          #   echo "${{secrets.DOCKERHUB_PASSWORD}}" | docker login -u ${{secrets.DOCKERHUB_USERNAME}} --password-stdin
-          #   echo "Docker login successful"
-
-          #   echo "Pulling latest Docker image..."
-          #   docker pull iamamanul/quantai:latest
-          #   echo "Docker pull successful"
-
-          #   echo "Attempting to stop existing quantai-app container..."
-          #   docker stop quantai-app || true # '|| true' allows the script to continue if container doesn't exist
-
-          #   echo "Attempting to remove old quantai-app container..."
-          #   docker rm quantai-app || true # '|| true' allows the script to continue if container doesn't exist
-
-          #   echo "Starting new container..."
-          #   docker run -d \
-          #     --name quantai-app \
-          #     -p 80:3000 \
-          #     -e NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY \
-          #     -e CLERK_SECRET_KEY \
-          #     -e NEXT_PUBLIC_CLERK_SIGN_IN_URL \
-          #     -e NEXT_PUBLIC_CLERK_SIGN_UP_URL \
-          #     -e NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL \
-          #     -e NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL \
-          #     -e DATABASE_URL \
-          #     -e GEMINI_API_KEY \
-          #     -e GROQ_API_KEY \
-          #     -e INNGEST_EVENT_KEY \
-          #     -e INNGEST_SIGNING_KEY \
-          #     iamamanul/quantai:latest
-
-          #   echo "Deployment script finished."
-
-  
 
       - name: Send Telegram Notification
         # This step will only run if the 'Deploy to EC2' step succeeded
