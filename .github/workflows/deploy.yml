@@ -179,20 +179,23 @@ jobs:
             docker rm quantai-app || true
 
             echo "Starting new container..."
+            # Remove Windows carriage returns to avoid bash errors
+            export LC_ALL=C
+            sed -i 's/\r$//' "$0"
             docker run -d \
               --name quantai-app \
               -p 80:3000 \
-              -e NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }} \
-              -e CLERK_SECRET_KEY=${{ secrets.CLERK_SECRET_KEY }} \
-              -e NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in \
-              -e NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up \
-              -e NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=/onboarding \
-              -e NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=/onboarding \
-              -e DATABASE_URL=${{ secrets.DATABASE_URL }} \
-              -e GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }} \
-              -e GROQ_API_KEY=${{ secrets.GROQ_API_KEY }} \
-              -e INNGEST_EVENT_KEY=${{ secrets.INNGEST_EVENT_KEY }} \
-              -e INNGEST_SIGNING_KEY=${{ secrets.INNGEST_SIGNING_KEY }} \
+              -e NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="${{ secrets.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY }}" \
+              -e CLERK_SECRET_KEY="${{ secrets.CLERK_SECRET_KEY }}" \
+              -e NEXT_PUBLIC_CLERK_SIGN_IN_URL="/sign-in" \
+              -e NEXT_PUBLIC_CLERK_SIGN_UP_URL="/sign-up" \
+              -e NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL="/onboarding" \
+              -e NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL="/onboarding" \
+              -e DATABASE_URL="${{ secrets.DATABASE_URL }}" \
+              -e GEMINI_API_KEY="${{ secrets.GEMINI_API_KEY }}" \
+              -e GROQ_API_KEY="${{ secrets.GROQ_API_KEY }}" \
+              -e INNGEST_EVENT_KEY="${{ secrets.INNGEST_EVENT_KEY }}" \
+              -e INNGEST_SIGNING_KEY="${{ secrets.INNGEST_SIGNING_KEY }}" \
               iamamanul/quantai:latest
             echo "Deployment script finished."
 
