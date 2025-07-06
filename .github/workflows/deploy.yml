@@ -179,9 +179,6 @@ jobs:
             docker rm quantai-app || true
 
             echo "Starting new container..."
-            # Remove Windows carriage returns to avoid bash errors
-            export LC_ALL=C
-            sed -i 's/\r$//' "$0"
             docker run -d \
               --name quantai-app \
               -p 80:3000 \
