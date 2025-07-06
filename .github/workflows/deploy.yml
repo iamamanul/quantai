@@ -183,7 +183,7 @@ jobs:
             docker run -d \
               --name quantai-app \
               -p 80:3000 \
-              -e NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY \ # These will now correctly pick up from the environment variables
+              -e NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY \
               -e CLERK_SECRET_KEY \
               -e NEXT_PUBLIC_CLERK_SIGN_IN_URL \
               -e NEXT_PUBLIC_CLERK_SIGN_UP_URL \
