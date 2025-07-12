@@ -58,7 +58,7 @@ export default function ResumePreview({ formValues, user, editMode = false, onSa
         background: '#fff',
         padding: '5vw',
         maxWidth: 800,
-        margin: '0 auto',
+        margin: '12px auto 0 auto',
         fontSize: 15,
         lineHeight: 1.5,
         boxSizing: 'border-box',
