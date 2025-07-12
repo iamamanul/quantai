@@ -32,6 +32,7 @@ import { useUser } from "@clerk/nextjs";
 import { generateATSResume } from "@/app/lib/helper";
 import { resumeSchema } from "@/app/lib/schema";
 import html2pdf from "html2pdf.js/dist/html2pdf.min.js";
+import ResumePreview from "./resume-preview";
 
 export default function ResumeBuilder({ initialContent }) {
   const [activeTab, setActiveTab] = useState("edit");
@@ -72,6 +73,55 @@ export default function ResumeBuilder({ initialContent }) {
 
   // Watch form fields for preview updates
   const formValues = watch();
+
+  const LOCAL_STORAGE_KEY = "resume-form-data";
+
+  // Helper to add type to entries if missing
+  function patchEntryTypes(data) {
+    const patch = (arr, type) =>
+      Array.isArray(arr)
+        ? arr.map((entry) => ({ ...entry, type: entry.type || type }))
+        : [];
+    return {
+      ...data,
+      education: patch(data.education, "Education"),
+      experience: patch(data.experience, "Experience"),
+      projects: patch(data.projects, "Project"),
+    };
+  }
+
+  // Load from localStorage if available or from backend if present
+  useEffect(() => {
+    const load = async () => {
+      // Try backend first
+      if (initialContent && initialContent.data) {
+        const patched = patchEntryTypes(initialContent.data);
+        Object.keys(patched).forEach((key) => {
+          setValue(key, patched[key]);
+        });
+        return;
+      }
+      // Fallback to localStorage
+      const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          const patched = patchEntryTypes(parsed);
+          Object.keys(patched).forEach((key) => {
+            setValue(key, patched[key]);
+          });
+        } catch (e) {
+          // Ignore parse errors
+        }
+      }
+    };
+    load();
+  }, [setValue, initialContent]);
+
+  // Persist to localStorage on every change
+  useEffect(() => {
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(formValues));
+  }, [formValues]);
 
   useEffect(() => {
     if (initialContent) setActiveTab("preview");
@@ -115,6 +165,8 @@ export default function ResumeBuilder({ initialContent }) {
         setAtsScore(saveResult.atsScore);
         setAtsFeedback(saveResult.feedback || "");
       }
+      // Clear localStorage after save
+      localStorage.removeItem(LOCAL_STORAGE_KEY);
     }
     if (saveError) {
       toast.error(saveError.message || "Failed to save resume");
@@ -146,12 +198,15 @@ export default function ResumeBuilder({ initialContent }) {
 
   const onSubmit = async (data) => {
     try {
-      const formattedContent = previewContent
+      // Ensure previewContent is a string before calling .replace()
+      const contentStr = typeof previewContent === 'string' ? previewContent : '';
+      const formattedContent = contentStr
         .replace(/\n/g, "\n")
         .replace(/\n\s*\n/g, "\n\n")
         .trim();
 
-      await saveResumeFn(formattedContent);
+      // Save both form data and formatted content
+      await saveResumeFn(data, formattedContent);
     } catch (error) {
       console.error("Save error:", error);
     }
@@ -496,134 +551,12 @@ export default function ResumeBuilder({ initialContent }) {
               </span>
             </div>
           )}
-          <div className="border rounded-lg">
-            <MDEditor
-              value={previewContent}
-              onChange={setPreviewContent}
-              height={800}
-              preview={resumeMode}
-            />
+          <div className="border rounded-lg bg-white">
+            <ResumePreview formValues={formValues} user={user} />
           </div>
           <div className="hidden">
             <div id="resume-pdf" className="resume-pdf ats-friendly simple-layout no-images">
-              <style jsx>{`
-                .resume-pdf {
-                  font-family: 'Arial', 'Helvetica', sans-serif;
-                  font-size: 12px;
-                  line-height: 1.4;
-                  color: #000;
-                  background: white;
-                  padding: 20px;
-                  max-width: 800px;
-                  margin: 0 auto;
-                }
-                .resume-pdf h1 {
-                  font-size: 28px;
-                  font-weight: bold;
-                  margin: 0 0 15px 0;
-                  color: #2c3e50;
-                  border-bottom: 3px solid #3498db;
-                  padding-bottom: 8px;
-                  text-align: center;
-                  text-transform: uppercase;
-                  letter-spacing: 1px;
-                }
-                .resume-pdf h2 {
-                  font-size: 16px;
-                  font-weight: bold;
-                  margin: 15px 0 8px 0;
-                  color: #34495e;
-                  text-transform: uppercase;
-                  letter-spacing: 0.5px;
-                }
-                .resume-pdf h3 {
-                  font-size: 14px;
-                  font-weight: bold;
-                  margin: 10px 0 5px 0;
-                  color: #2c3e50;
-                }
-                .resume-pdf p {
-                  margin: 5px 0;
-                  text-align: justify;
-                }
-                .resume-pdf strong {
-                  font-weight: bold;
-                  color: #2c3e50;
-                }
-                .resume-pdf ul {
-                  margin: 5px 0;
-                  padding-left: 20px;
-                }
-                .resume-pdf li {
-                  margin: 3px 0;
-                }
-                .resume-pdf .contact-info {
-                  text-align: center;
-                  margin-bottom: 20px;
-                  padding: 10px;
-                  background-color: #f8f9fa;
-                  border-radius: 5px;
-                }
-                .resume-pdf .section {
-                  margin-bottom: 20px;
-                }
-                .resume-pdf .entry {
-                  margin-bottom: 15px;
-                  page-break-inside: avoid;
-                }
-                .resume-pdf .entry-header {
-                  font-weight: bold;
-                  margin-bottom: 5px;
-                }
-                .resume-pdf .entry-date {
-                  font-style: italic;
-                  color: #7f8c8d;
-                  margin-bottom: 8px;
-                }
-                .resume-pdf .entry-description {
-                  margin-top: 5px;
-                }
-                .resume-pdf .skills-list {
-                  display: flex;
-                  flex-wrap: wrap;
-                  gap: 10px;
-                  margin: 10px 0;
-                }
-                .resume-pdf .skill-item {
-                  background-color: #ecf0f1;
-                  padding: 3px 8px;
-                  border-radius: 3px;
-                  font-size: 11px;
-                }
-                @media print {
-                  .resume-pdf {
-                    padding: 15px;
-                    font-size: 11px;
-                  }
-                  .resume-pdf h1 {
-                    font-size: 20px;
-                  }
-                  .resume-pdf h2 {
-                    font-size: 14px;
-                  }
-                  .resume-pdf h3 {
-                    font-size: 12px;
-                  }
-                  .resume-pdf .entry {
-                    page-break-inside: avoid;
-                  }
-                }
-              `}</style>
-              <MDEditor.Markdown
-                source={previewContent}
-                style={{
-                  background: "white",
-                  color: "black",
-                  fontFamily: "Arial, sans-serif",
-                  fontSize: "12px",
-                  lineHeight: "1.4",
-                }}
-              />
+              <ResumePreview formValues={formValues} user={user} />
             </div>
           </div>
         </TabsContent>

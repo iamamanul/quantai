@@ -43,7 +43,7 @@ export default function ResumePage() {
 
     return (
       <div className="py-6">
-        <ResumeBuilder initialContent={data?.content} />
+        <ResumeBuilder initialContent={data} />
       </div>
     );
   }

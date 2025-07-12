@@ -6,10 +6,13 @@ import { Button } from "@/components/ui/button";
 import { Download, Edit, Eye, FileText } from "lucide-react";
 import html2pdf from "html2pdf.js/dist/html2pdf.min.js";
 import { toast } from "sonner";
+import { updateCoverLetter } from "@/actions/cover-letter";
 
-const CoverLetterPreview = ({ content }) => {
+const CoverLetterPreview = ({ content, coverLetterId }) => {
   const [previewMode, setPreviewMode] = useState("preview");
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+  const [editContent, setEditContent] = useState(content);
+  const [isSaving, setIsSaving] = useState(false);
 
   const generatePDF = async () => {
     setIsGeneratingPDF(true);
@@ -30,6 +33,19 @@ const CoverLetterPreview = ({ content }) => {
       toast.error("Failed to generate PDF");
     } finally {
       setIsGeneratingPDF(false);
+    }
+  };
+
+  const handleSave = async () => {
+    setIsSaving(true);
+    try {
+      await updateCoverLetter(coverLetterId, editContent);
+      toast.success("Cover letter updated!");
+      setPreviewMode("preview");
+    } catch (e) {
+      toast.error(e.message || "Failed to update cover letter");
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -62,6 +78,26 @@ const CoverLetterPreview = ({ content }) => {
               </>
             )}
           </Button>
+         {previewMode === "edit" && (
+           <Button
+             size="sm"
+             onClick={handleSave}
+             disabled={isSaving}
+             className="flex-1 sm:flex-none justify-center bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700"
+           >
+             {isSaving ? (
+               <>
+                 <FileText className="h-4 w-4 mr-2 animate-spin" />
+                 Saving...
+               </>
+             ) : (
+               <>
+                 <FileText className="h-4 w-4 mr-2" />
+                 Save
+               </>
+             )}
+           </Button>
+         )}
           <Button
             size="sm"
             onClick={generatePDF}
@@ -85,12 +121,22 @@ const CoverLetterPreview = ({ content }) => {
 
       {/* Cover Letter Content */}
       <div className="border rounded-lg overflow-hidden">
-        <MDEditor
-          value={content}
-          preview={previewMode}
-          height={700}
-          className="cover-letter-editor"
-        />
+        {previewMode === "edit" ? (
+          <MDEditor
+            value={editContent}
+            onChange={setEditContent}
+            preview="edit"
+            height={700}
+            className="cover-letter-editor"
+          />
+        ) : (
+          <MDEditor
+            value={editContent}
+            preview="preview"
+            height={700}
+            className="cover-letter-editor"
+          />
+        )}
       </div>
 
       {/* Hidden PDF Element */}

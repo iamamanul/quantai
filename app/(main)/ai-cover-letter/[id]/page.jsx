@@ -76,7 +76,7 @@ export default async function EditCoverLetterPage({ params }) {
 
       {/* Cover Letter Preview */}
       <div className="text-center">
-        <CoverLetterPreview content={coverLetter?.content} />
+        <CoverLetterPreview content={coverLetter?.content} coverLetterId={coverLetter?.id} />
       </div>
     </div>
   );

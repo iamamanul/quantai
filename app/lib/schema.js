@@ -34,35 +34,68 @@ export const contactSchema = z.object({
   twitter: z.string().optional(),
 });
 
-export const entrySchema = z
-  .object({
-    title: z.string().min(1, "Title is required"),
-    organization: z.string().min(1, "Organization is required"),
-    startDate: z.string().min(1, "Start date is required"),
-    endDate: z.string().optional(),
-    description: z.string().min(1, "Description is required"),
-    current: z.boolean().default(false),
-  })
-  .refine(
-    (data) => {
-      if (!data.current && !data.endDate) {
-        return false;
-      }
-      return true;
-    },
-    {
-      message: "End date is required unless this is your current position",
-      path: ["endDate"],
+// Education entry schema
+export const educationEntrySchema = z.object({
+  institution: z.string().min(1, "Institution is required"),
+  degree: z.string().min(1, "Degree is required"),
+  location: z.string().min(1, "Location is required"),
+  grade: z.string().optional(),
+  startDate: z.string().min(1, "Start date is required"),
+  endDate: z.string().optional(),
+  current: z.boolean().default(false),
+}).refine(
+  (data) => {
+    if (!data.current && !data.endDate) {
+      return false;
     }
-  );
+    return true;
+  },
+  {
+    message: "End date is required unless this is your current position",
+    path: ["endDate"],
+  }
+);
+
+// Experience/Project entry schema
+export const experienceEntrySchema = z.object({
+  title: z.string().min(1, "Title is required"),
+  organization: z.string().min(1, "Organization is required"),
+  startDate: z.string().min(1, "Start date is required"),
+  endDate: z.string().optional(),
+  description: z.string().min(1, "Description is required"),
+  current: z.boolean().default(false),
+}).refine(
+  (data) => {
+    if (!data.current && !data.endDate) {
+      return false;
+    }
+    return true;
+  },
+  {
+    message: "End date is required unless this is your current position",
+    path: ["endDate"],
+  }
+);
+
+// Project entry schema (organization optional)
+export const projectEntrySchema = z.object({
+  title: z.string().min(1, "Title is required"),
+  organization: z.string().optional(),
+  startDate: z.string().optional(),
+  endDate: z.string().optional(),
+  description: z.string().min(1, "Description is required"),
+  current: z.boolean().optional(),
+  link: z.string().optional(),
+});
 
 export const resumeSchema = z.object({
   contactInfo: contactSchema,
   summary: z.string().min(1, "Professional summary is required"),
   skills: z.string().min(1, "Skills are required"),
-  experience: z.array(entrySchema),
-  education: z.array(entrySchema),
-  projects: z.array(entrySchema),
+  experience: z.array(experienceEntrySchema),
+  education: z.array(educationEntrySchema),
+  projects: z.array(projectEntrySchema),
+  portfolio: z.string().optional(),
 });
 
 export const coverLetterSchema = z.object({

@@ -8,7 +8,8 @@ import { revalidatePath } from "next/cache";
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-export async function saveResume(content) {
+// Accept both formData (object) and content (string)
+export async function saveResume(formData, content) {
   const { userId } = await auth();
   if (!userId) throw new Error("Unauthorized");
 
@@ -28,12 +29,14 @@ export async function saveResume(content) {
       },
       update: {
         content,
+        data: formData,
         atsScore: atsAnalysis.score,
         feedback: atsAnalysis.feedback,
       },
       create: {
         userId: user.id,
         content,
+        data: formData,
         atsScore: atsAnalysis.score,
         feedback: atsAnalysis.feedback,
       },
@@ -57,9 +60,16 @@ export async function getResume() {
 
   if (!user) throw new Error("User not found");
 
+  // Return both content and data fields
   return await db.resume.findUnique({
     where: {
       userId: user.id,
+    },
+    select: {
+      content: true,
+      data: true,
+      atsScore: true,
+      feedback: true,
     },
   });
 }
@@ -115,6 +125,48 @@ export async function analyzeATSResume(content, industry) {
   }
 }
 
+// Utility: Try Gemini, then Groq if Gemini fails
+async function generateWithAI(prompt) {
+  // Try Gemini first
+  try {
+    const result = await model.generateContent(prompt);
+    const response = result.response;
+    return response.text().trim();
+  } catch (geminiError) {
+    console.error("Gemini failed, trying Groq...", geminiError);
+    // Try Groq fallback
+    try {
+      const groqResponse = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${process.env.GROQ_API_KEY}`,
+        },
+        body: JSON.stringify({
+          model: "llama3-70b-8192",
+          messages: [
+            { role: "system", content: "You are a helpful assistant." },
+            { role: "user", content: prompt },
+          ],
+          max_tokens: 1024,
+          temperature: 0.7,
+        }),
+      });
+      if (!groqResponse.ok) {
+        const errText = await groqResponse.text();
+        throw new Error("Groq API failed: " + errText);
+      }
+      const data = await groqResponse.json();
+      let text = data.choices?.[0]?.message?.content || "";
+      text = text.replace(/```(?:markdown|json)?\n?/g, "").trim();
+      return text;
+    } catch (groqError) {
+      console.error("Groq fallback also failed:", groqError);
+      throw new Error("Both Gemini and Groq API failed. Please try again later.");
+    }
+  }
+}
+
 export async function improveWithAI({ current, type }) {
   const { userId } = await auth();
   if (!userId) throw new Error("Unauthorized");
@@ -145,13 +197,5 @@ export async function improveWithAI({ current, type }) {
     Format the response as a single paragraph without any additional text or explanations.
   `;
 
-  try {
-    const result = await model.generateContent(prompt);
-    const response = result.response;
-    const improvedContent = response.text().trim();
-    return improvedContent;
-  } catch (error) {
-    console.error("Error improving content:", error);
-    throw new Error("Failed to improve content");
-  }
+  return await generateWithAI(prompt);
 }
