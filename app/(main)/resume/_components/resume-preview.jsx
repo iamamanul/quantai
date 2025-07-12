@@ -51,9 +51,46 @@ export default function ResumePreview({ formValues, user, editMode = false, onSa
   }
 
   return (
-    <div style={{ fontFamily: 'Georgia, Times, serif', color: '#222', background: '#fff', padding: 32, maxWidth: 800, margin: '0 auto', fontSize: 15, lineHeight: 1.5 }}>
+    <div
+      style={{
+        fontFamily: 'Georgia, Times, serif',
+        color: '#222',
+        background: '#fff',
+        padding: '5vw',
+        maxWidth: 800,
+        margin: '0 auto',
+        fontSize: 15,
+        lineHeight: 1.5,
+        boxSizing: 'border-box',
+      }}
+    >
+      <style>{`
+        @media (max-width: 600px) {
+          .resume-header {
+            flex-direction: column !important;
+            align-items: flex-start !important;
+            gap: 8px;
+          }
+          .resume-header-right {
+            text-align: left !important;
+            width: 100% !important;
+          }
+          .resume-preview-container {
+            padding: 4vw !important;
+            font-size: 13px !important;
+          }
+          .resume-preview-container h1 {
+            font-size: 7vw !important;
+          }
+          .resume-preview-container input,
+          .resume-preview-container textarea {
+            font-size: 13px !important;
+            width: 100% !important;
+          }
+        }
+      `}</style>
       {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '2px solid #222', paddingBottom: 8 }}>
+      <div className="resume-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '2px solid #222', paddingBottom: 8, gap: 0 }}>
         <div>
           {isEditing ? (
             <input
@@ -74,7 +111,7 @@ export default function ResumePreview({ formValues, user, editMode = false, onSa
             formValues.title || "Information Technology"
           )}</div>
         </div>
-        <div style={{ textAlign: 'right', fontSize: 13 }}>
+        <div className="resume-header-right" style={{ textAlign: 'right', fontSize: 13 }}>
           {isEditing ? (
             <>
               <input style={{ fontSize: 13, width: '100%', border: 'none', outline: 'none', background: '#f8f8f8' }} value={contact.email || ''} onChange={e => handleContactChange('email', e.target.value)} placeholder="Email" />
