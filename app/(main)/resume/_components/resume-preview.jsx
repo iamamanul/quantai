@@ -307,7 +307,7 @@ export default function ResumePreview({ formValues, user, editMode = false, onSa
               Save
             </button>
             <button
-              style={{ padding: '8px 24px', fontSize: 15, fontWeight: 600, background: '#eee', color: '#222', border: 'none', borderRadius: 4, cursor: 'pointer' }}
+              style={{ padding: '8px 25px', fontSize: 15, fontWeight: 600, background: '#eee', color: '#222', border: 'none', borderRadius: 4, cursor: 'pointer' }}
               onClick={() => onCancel && onCancel()}
             >
               Cancel
