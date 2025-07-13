@@ -248,7 +248,7 @@ const DashboardView = ({ insights, user, careerRoadmap }) => {
 
       {/* Career Roadmap Section */}
       <div className="mt-8">
-        <h2 className="text-3xl font-bold mb-6 gradient-title">Your Career Roadmap</h2>
+        <h2 className="text-3xl font-bold mb-6 gradient-title">Your Career</h2>
         <CareerRoadmap 
           insights={insights} 
           userSkills={user.skills} 
