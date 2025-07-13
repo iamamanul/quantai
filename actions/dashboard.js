@@ -10,10 +10,10 @@ const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 // Fallback: Groq API fetch
 async function fetchGroqInsights(industry) {
   const prompt = `
-    Analyze the current state of the ${industry} industry and provide insights in ONLY the following JSON format without any additional notes or explanations:
+    Analyze the current state of the ${industry} industry in India and provide insights in ONLY the following JSON format without any additional notes or explanations:
     {
       "salaryRanges": [
-        { "role": "string", "min": number, "max": number, "median": number, "location": "string" }
+        { "role": "string", "min": number, "max": number, "median": number, "location": "India" }
       ],
       "growthRate": number,
       "demandLevel": "High" | "Medium" | "Low",
@@ -23,9 +23,7 @@ async function fetchGroqInsights(industry) {
       "recommendedSkills": ["skill1", "skill2"]
     }
     IMPORTANT: Return ONLY the JSON. No additional text, notes, or markdown formatting.
-    Include at least 5 common roles for salary ranges.
-    Growth rate should be a percentage.
-    Include at least 5 skills and trends.
+    All salary data must be for the Indian market, in INR (lakhs per annum, LPA). Each salary value should be a whole number representing lakhs per annum (e.g., 6 = ₹6,00,000/year). Do NOT use thousands, crores, or decimals. Include at least 5 common roles for salary ranges, and set location to India for all roles. Growth rate should be a percentage. Include at least 5 skills and trends.
   `;
   const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
     method: "POST",
@@ -125,10 +123,10 @@ export const generateAIInsights = async (industry, provider = "gemini") => {
   }
   console.log("Calling Gemini API...");
   const prompt = `
-          Analyze the current state of the ${industry} industry and provide insights in ONLY the following JSON format without any additional notes or explanations:
+          Analyze the current state of the ${industry} industry in India and provide insights in ONLY the following JSON format without any additional notes or explanations:
           {
             "salaryRanges": [
-              { "role": "string", "min": number, "max": number, "median": number, "location": "string" }
+              { "role": "string", "min": number, "max": number, "median": number, "location": "India" }
             ],
             "growthRate": number,
             "demandLevel": "High" | "Medium" | "Low",
@@ -138,9 +136,7 @@ export const generateAIInsights = async (industry, provider = "gemini") => {
             "recommendedSkills": ["skill1", "skill2"]
           }
           IMPORTANT: Return ONLY the JSON. No additional text, notes, or markdown formatting.
-          Include at least 5 common roles for salary ranges.
-          Growth rate should be a percentage.
-          Include at least 5 skills and trends.
+          All salary data must be for the Indian market, in INR (lakhs per annum, LPA). Each salary value should be a whole number representing lakhs per annum (e.g., 6 = ₹6,00,000/year). Do NOT use thousands, crores, or decimals. Include at least 5 common roles for salary ranges, and set location to India for all roles. Growth rate should be a percentage. Include at least 5 skills and trends.
         `;
   try {
     const result = await model.generateContent(prompt);
