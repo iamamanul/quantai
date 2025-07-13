@@ -149,7 +149,7 @@ const CareerRoadmap = ({ insights, userSkills = [], userExperience = 0, careerRo
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <TrendingUp className="h-5 w-5" />
-            Your Career Roadmap
+            Your Career
           </CardTitle>
           <CardDescription>
             A personalized path to advance your career with estimated timelines
