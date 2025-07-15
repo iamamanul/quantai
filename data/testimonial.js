@@ -11,7 +11,7 @@ export const testimonial = [
     quote:
       "The industry insights helped me pivot my career successfully. The salary data was spot-on!",
     author: "Rajat Mangla",
-    image: "/rajat.jpg",
+    image: "/Rajat.jpg",
     role: "Product Manager",
     company: "VolunTier",
   },
