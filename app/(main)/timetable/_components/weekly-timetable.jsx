@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -32,7 +32,7 @@ const DEFAULT_TIME_SLOTS = [
   "3:40 - 4:30"
 ];
 
-export default function WeeklyTimeTable({ onBackToCalendar, initialData }) {
+export default function WeeklyTimeTable({ onBackToCalendar }) {
   const [weeklyTasks, setWeeklyTasks] = useState({});
   const [currentWeek, setCurrentWeek] = useState(startOfWeek(new Date(), { weekStartsOn: 1 }));
   const [editingCell, setEditingCell] = useState(null);
@@ -53,7 +53,7 @@ export default function WeeklyTimeTable({ onBackToCalendar, initialData }) {
   const [showDatePicker, setShowDatePicker] = useState(false);
 
   // Load tasks for the selected week
-  const loadWeekTasks = async () => {
+  const loadWeekTasks = useCallback(async () => {
     try {
       const response = await fetch('/api/timetable');
       if (response.ok) {
@@ -123,12 +123,12 @@ export default function WeeklyTimeTable({ onBackToCalendar, initialData }) {
       });
       setWeeklyTasks(emptyTasks);
     }
-  };
+  }, [currentWeek, timeSlots]);
 
   // Load tasks when week or time slots change
   useEffect(() => {
     loadWeekTasks();
-  }, [currentWeek, timeSlots]);
+  }, [loadWeekTasks]);
 
   // Calculate progress
   useEffect(() => {
@@ -530,7 +530,7 @@ export default function WeeklyTimeTable({ onBackToCalendar, initialData }) {
             {/* Existing Time Slots */}
             <div className="space-y-3">
               <h4 className="text-base lg:text-lg font-semibold text-white">Current Time Slots:</h4>
-              {timeSlots.map((slot, index) => (
+              {timeSlots.map((slot) => (
                 <div key={slot} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 p-3 bg-slate-700 rounded-lg border border-slate-600">
                   {editingTimeSlot === slot ? (
                     <>
@@ -614,11 +614,11 @@ export default function WeeklyTimeTable({ onBackToCalendar, initialData }) {
                   </th>
                   {DAYS_OF_WEEK.map((day, index) => (
                     <th key={day} className={`text-white font-bold text-center p-3 lg:p-4 min-w-[140px] border-r border-slate-600 ${index === 0 ? 'bg-gradient-to-r from-blue-600 to-blue-700' :
-                        index === 1 ? 'bg-gradient-to-r from-indigo-600 to-indigo-700' :
-                          index === 2 ? 'bg-gradient-to-r from-purple-600 to-purple-700' :
-                            index === 3 ? 'bg-gradient-to-r from-blue-600 to-purple-600' :
-                              index === 4 ? 'bg-gradient-to-r from-indigo-600 to-blue-700' :
-                                index === 5 ? 'bg-gradient-to-r from-slate-600 to-slate-700' : 'bg-gradient-to-r from-slate-600 to-slate-700'
+                      index === 1 ? 'bg-gradient-to-r from-indigo-600 to-indigo-700' :
+                        index === 2 ? 'bg-gradient-to-r from-purple-600 to-purple-700' :
+                          index === 3 ? 'bg-gradient-to-r from-blue-600 to-purple-600' :
+                            index === 4 ? 'bg-gradient-to-r from-indigo-600 to-blue-700' :
+                              index === 5 ? 'bg-gradient-to-r from-slate-600 to-slate-700' : 'bg-gradient-to-r from-slate-600 to-slate-700'
                       }`}>
                       <div className="text-sm lg:text-base">{day}</div>
                       <div className="text-xs lg:text-sm font-normal mt-1 opacity-90">
@@ -681,7 +681,7 @@ export default function WeeklyTimeTable({ onBackToCalendar, initialData }) {
                               <div className="flex items-center gap-2 mt-2">
                                 <Checkbox
                                   checked={weeklyTasks[day][timeSlot].completed}
-                                  onCheckedChange={(checked) => {
+                                  onCheckedChange={() => {
                                     handleToggleCompleted(day, timeSlot);
                                   }}
                                   className="h-3 lg:h-4 w-3 lg:w-4 border-2 border-white text-blue-600"

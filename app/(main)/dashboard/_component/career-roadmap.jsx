@@ -10,7 +10,6 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Button } from "@/components/ui/button";
 import {
   MapPin,
   TrendingUp,
@@ -18,14 +17,13 @@ import {
   CheckCircle,
   Clock,
   Star,
-  ArrowRight,
   BookOpen,
   Users,
   Award,
   AlertCircle,
 } from "lucide-react";
 
-const CareerRoadmap = ({ insights, userSkills = [], userExperience = 0, careerRoadmap }) => {
+const CareerRoadmap = ({ userSkills = [], userExperience = 0, careerRoadmap }) => {
   const getLevelColor = (level) => {
     switch (level) {
       case "entry": return "bg-blue-500";
@@ -241,4 +239,4 @@ const CareerRoadmap = ({ insights, userSkills = [], userExperience = 0, careerRo
   );
 };
 
-export default CareerRoadmap; 
+export default CareerRoadmap;

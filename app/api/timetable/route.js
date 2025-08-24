@@ -4,7 +4,7 @@ import {
   deleteTimetable,
 } from "@/actions/timetable";
 
-export async function GET(req) {
+export async function GET() {
   const data = await getTimetable();
   return Response.json(data);
 }

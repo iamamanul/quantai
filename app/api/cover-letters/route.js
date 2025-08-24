@@ -1,6 +1,6 @@
 import { getCoverLetters } from "@/actions/cover-letter";
 
-export async function GET(req) {
+export async function GET() {
   try {
     const data = await getCoverLetters();
     return Response.json(data);

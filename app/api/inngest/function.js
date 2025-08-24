@@ -3,7 +3,7 @@ import { inngest } from "./client";
 export const generateIndustryInsights = inngest.createFunction(
   { id: "generate-industry-insights" },
   { event: "url/ingest.requested" }, // or whatever event you want to trigger on
-  async ({ event, step }) => {
+  async ({ event }) => {
     // Your URL ingestion logic here
     console.log("Processing URL:", event.data.url);
     

@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { ArrowLeft, FileText, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import CoverLetterGenerator from "../_components/cover-letter-generator";
 
 export default function NewCoverLetterPage() {

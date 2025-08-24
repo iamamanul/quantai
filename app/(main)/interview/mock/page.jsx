@@ -3,7 +3,7 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Quiz from "../_components/quiz";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 
 function ProviderToggle({ provider, setProvider }) {
   return (

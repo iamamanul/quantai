@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { ArrowLeft, FileText, Building2, Briefcase, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { getCoverLetter } from "@/actions/cover-letter";
 import CoverLetterPreview from "../_components/cover-letter-preview";
 import { format } from "date-fns";

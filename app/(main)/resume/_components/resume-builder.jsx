@@ -11,13 +11,10 @@ import {
   Monitor,
   Save,
   CheckCircle,
-  Info,
-  TrendingUp,
   Target,
   Sparkles,
 } from "lucide-react";
 import { toast } from "sonner";
-import MDEditor from "@uiw/react-md-editor";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
@@ -41,8 +38,6 @@ export default function ResumeBuilder({ initialContent }) {
   const [resumeMode, setResumeMode] = useState("preview");
   const [atsScore, setAtsScore] = useState(0);
   const [atsFeedback, setAtsFeedback] = useState("");
-  const [atsStrengths, setAtsStrengths] = useState([]);
-  const [atsWeaknesses, setAtsWeaknesses] = useState([]);
   const [isImprovingSummary, setIsImprovingSummary] = useState(false);
 
   const {
@@ -110,7 +105,7 @@ export default function ResumeBuilder({ initialContent }) {
           Object.keys(patched).forEach((key) => {
             setValue(key, patched[key]);
           });
-        } catch (e) {
+        } catch {
           // Ignore parse errors
         }
       }
@@ -409,7 +404,7 @@ export default function ResumeBuilder({ initialContent }) {
                       });
                       setValue("summary", improvedSummary);
                       toast.success("Summary improved successfully!");
-                    } catch (error) {
+                    } catch {
                       toast.error("Failed to improve summary");
                     } finally {
                       setIsImprovingSummary(false);

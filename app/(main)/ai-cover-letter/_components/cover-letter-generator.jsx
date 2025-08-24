@@ -51,7 +51,7 @@ export default function CoverLetterGenerator() {
       router.push(`/ai-cover-letter/${generatedLetter.id}`);
       reset();
     }
-  }, [generatedLetter]);
+  }, [generatedLetter, reset, router]);
 
   const onSubmit = async (data) => {
     try {
@@ -73,7 +73,7 @@ export default function CoverLetterGenerator() {
       const improvedDescription = await improveJobDescription(jobDescription);
       setValue("jobDescription", improvedDescription);
       toast.success("Job description improved successfully!");
-    } catch (error) {
+    } catch {
       toast.error("Failed to improve job description");
     } finally {
       setIsImprovingDescription(false);

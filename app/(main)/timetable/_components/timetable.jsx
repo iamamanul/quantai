@@ -91,7 +91,7 @@ export default function TimeTable({ initialData }) {
       
       setTimetable(newTimetable);
       toast.success("Task added successfully!");
-    } catch (error) {
+    } catch {
       toast.error("Failed to add task");
     } finally {
       setIsAddingTask(false);

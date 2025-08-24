@@ -1,10 +1,9 @@
 "use client";
-import useSWR, { SWRConfig, mutate } from "swr";
+import useSWR, { SWRConfig } from "swr";
 import DashboardView from "./_component/dashboard-view";
 import { useRef, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { ReloadIcon } from "@radix-ui/react-icons";
 
 export const dynamic = "force-dynamic";
 
