@@ -77,14 +77,10 @@ model TimeTable {
   date        DateTime
   task        String
   completed   Boolean   @default(false)
-  aiGenerated Boolean   @default(false)  // Whether task was AI-generated
-  difficulty  String?   // beginner, intermediate, advanced
-  resources   String[]  @default([])     // Learning resources suggested by AI
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
   @@index([userId])
-  @@index([userId, aiGenerated])  // For filtering AI tasks
 }
 
 // Combined Industry Trends and Salary Insights

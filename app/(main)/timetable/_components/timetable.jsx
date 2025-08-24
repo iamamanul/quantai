@@ -8,8 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
 import { toast } from "sonner";
-import { Calendar as CalendarIcon, CheckCircle, ListTodo, CalendarDays, Bot, Sparkles } from 'lucide-react';
-import AIPrompt from './ai-prompt';
+import { Calendar as CalendarIcon, CheckCircle, ListTodo, CalendarDays } from 'lucide-react';
 
 export default function TimeTable({ initialData }) {
   const [timetable, setTimetable] = useState(new Map());
@@ -20,7 +19,30 @@ export default function TimeTable({ initialData }) {
   const [isAddingTask, setIsAddingTask] = useState(false);
   const [showAllTasks, setShowAllTasks] = useState(false);
   const [showWeeklyView, setShowWeeklyView] = useState(false);
-  const [showAIPrompt, setShowAIPrompt] = useState(false);
+
+  // Handle browser back/forward navigation
+  useEffect(() => {
+    const handlePopState = (event) => {
+      if (event.state && event.state.view === 'weekly') {
+        setShowWeeklyView(true);
+      } else {
+        setShowWeeklyView(false);
+      }
+    };
+
+    // Listen for browser back/forward events
+    window.addEventListener('popstate', handlePopState);
+
+    // Check initial URL state on component mount
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('view') === 'weekly') {
+      setShowWeeklyView(true);
+    }
+
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, []);
 
   useEffect(() => {
     if (initialData && initialData.length > 0) {
@@ -29,10 +51,7 @@ export default function TimeTable({ initialData }) {
         taskMap.set(new Date(item.date).toISOString(), {
           task: item.task,
           completed: item.completed,
-          id: item.id,
-          aiGenerated: item.aiGenerated || false,
-          difficulty: item.difficulty,
-          resources: item.resources || []
+          id: item.id
         });
       });
       setTimetable(taskMap);
@@ -67,10 +86,7 @@ export default function TimeTable({ initialData }) {
       newTimetable.set(dateKey, {
         task: currentTask,
         completed: existingTask?.completed || false,
-        id: existingTask?.id,
-        aiGenerated: false,
-        difficulty: null,
-        resources: []
+        id: existingTask?.id
       });
       
       setTimetable(newTimetable);
@@ -102,10 +118,7 @@ export default function TimeTable({ initialData }) {
         id: data.id,
         date: new Date(dateStr),
         task: data.task,
-        completed: data.completed,
-        aiGenerated: data.aiGenerated,
-        difficulty: data.difficulty,
-        resources: data.resources
+        completed: data.completed
       }));
 
       const response = await fetch("/api/timetable", {
@@ -152,99 +165,6 @@ export default function TimeTable({ initialData }) {
     }
   };
 
-  const handleAITimetableGenerated = async (calendarTasks, aiTimetable) => {
-    console.log('=== AI TIMETABLE DEBUG START ===');
-    console.log('Received calendar tasks:', calendarTasks);
-    console.log('Current timetable state before:', Array.from(timetable.entries()));
-    
-    if (!calendarTasks || calendarTasks.length === 0) {
-      console.error('No calendar tasks received!');
-      toast.error('No tasks were generated. Please try again.');
-      return;
-    }
-
-    try {
-      // Create completely new Map to force re-render
-      const newTimetable = new Map();
-      
-      // Copy existing tasks first
-      timetable.forEach((value, key) => {
-        newTimetable.set(key, value);
-      });
-      
-      // Add AI-generated tasks
-      let addedCount = 0;
-      calendarTasks.forEach((task, index) => {
-        console.log(`Processing task ${index + 1}:`, task);
-        
-        if (!task || !task.date) {
-          console.error('Invalid task - missing date:', task);
-          return;
-        }
-        
-        try {
-          let taskDate;
-          if (typeof task.date === 'string') {
-            taskDate = new Date(task.date);
-          } else if (task.date instanceof Date) {
-            taskDate = task.date;
-          } else {
-            console.error('Invalid date format:', task.date);
-            return;
-          }
-          
-          if (isNaN(taskDate.getTime())) {
-            console.error('Invalid date value:', task.date);
-            return;
-          }
-          
-          const dateKey = taskDate.toISOString();
-          console.log('Using date key:', dateKey);
-          
-          const taskData = {
-            task: task.task || 'AI Generated Task',
-            completed: false,
-            id: null,
-            aiGenerated: true,
-            difficulty: task.difficulty || 'beginner',
-            resources: task.resources || []
-          };
-          
-          console.log('Adding task data:', taskData);
-          newTimetable.set(dateKey, taskData);
-          addedCount++;
-          
-        } catch (taskError) {
-          console.error('Error processing individual task:', taskError, task);
-        }
-      });
-      
-      console.log('Total tasks added:', addedCount);
-      console.log('New timetable state after:', Array.from(newTimetable.entries()));
-      
-      if (addedCount === 0) {
-        toast.error('No tasks could be processed. Please check the console for errors.');
-        return;
-      }
-      
-      // Force state update
-      setTimetable(newTimetable);
-      
-      console.log('Timetable state updated - should trigger re-render');
-      toast.success(`Successfully added ${addedCount} AI-generated tasks to your calendar!`);
-      
-      // Force a small delay to ensure state update
-      setTimeout(() => {
-        console.log('Final timetable check:', Array.from(newTimetable.entries()).length, 'entries');
-      }, 100);
-      
-    } catch (error) {
-      console.error('Error in handleAITimetableGenerated:', error);
-      toast.error('Failed to add AI tasks. Check console for details.');
-    }
-    
-    console.log('=== AI TIMETABLE DEBUG END ===');
-  };
 
   // Lazy load WeeklyTimeTable component
   const [WeeklyTimeTable, setWeeklyTimeTable] = useState(null);
@@ -273,7 +193,13 @@ export default function TimeTable({ initialData }) {
           task: data.task,
           completed: data.completed
         }))}
-        onBackToCalendar={() => setShowWeeklyView(false)}
+        onBackToCalendar={() => {
+          setShowWeeklyView(false);
+          // Update URL when going back to calendar view
+          const currentUrl = new URL(window.location);
+          currentUrl.searchParams.delete('view');
+          window.history.pushState({ view: 'calendar' }, '', currentUrl);
+        }}
       />
     );
   }
@@ -297,48 +223,13 @@ export default function TimeTable({ initialData }) {
           </div>
           <div className="flex gap-3 flex-wrap">
             <Button 
-              onClick={() => setShowAIPrompt(true)}
-              className="text-lg py-4 px-6 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white relative flex items-center gap-2 shadow-lg"
-            >
-              <Bot className="w-5 h-5" />
-              <Sparkles className="w-4 h-4" />
-              AI Study Planner
-            </Button>
-            <Button 
-              onClick={async () => {
-                // Manual test - add a task directly
-                const tomorrow = new Date();
-                tomorrow.setDate(tomorrow.getDate() + 1);
-                
-                const testTasks = [{
-                  date: tomorrow,
-                  task: '[9:00-10:30] TEST: Manual AI task',
-                  completed: false,
-                  aiGenerated: true,
-                  difficulty: 'beginner',
-                  resources: ['Test Resource']
-                }];
-                
-                console.log('MANUAL TEST: Adding tasks', testTasks);
-                await handleAITimetableGenerated(testTasks, { goal: 'Manual Test' });
-              }}
-              className="text-sm py-2 px-4 bg-red-600 hover:bg-red-700 text-white"
-            >
-              🔧 TEST
-            </Button>
-            <Button 
               onClick={() => {
-                console.log('=== CURRENT TIMETABLE STATE ===');
-                console.log('Timetable size:', timetable.size);
-                console.log('All entries:', Array.from(timetable.entries()));
-                toast.info(`Current timetable has ${timetable.size} tasks`);
+                setShowWeeklyView(true);
+                // Add to browser history so back button works
+                const currentUrl = new URL(window.location);
+                currentUrl.searchParams.set('view', 'weekly');
+                window.history.pushState({ view: 'weekly' }, '', currentUrl);
               }}
-              className="text-sm py-2 px-4 bg-yellow-600 hover:bg-yellow-700 text-white"
-            >
-              📊 DEBUG
-            </Button>
-            <Button 
-              onClick={() => setShowWeeklyView(true)}
               className="text-lg py-4 px-6 bg-purple-600 hover:bg-purple-700 text-white relative flex items-center gap-2"
             >
               <CalendarDays className="w-5 h-5" />
@@ -424,22 +315,6 @@ export default function TimeTable({ initialData }) {
             Tasks for {format(selectedDate, "MMMM d, yyyy")}
           </h2>
           
-          {/* Show existing task for the selected date if any */}
-          {timetable.get(selectedDate.toISOString()) && (
-            <div className="mb-4">
-              {timetable.get(selectedDate.toISOString()).aiGenerated && (
-                <div className="flex items-center gap-2 mb-2 text-xs text-purple-400">
-                  <Bot className="w-3 h-3" />
-                  <span>AI Generated Task</span>
-                  {timetable.get(selectedDate.toISOString()).difficulty && (
-                    <span className="px-2 py-1 bg-purple-600/20 rounded text-xs">
-                      {timetable.get(selectedDate.toISOString()).difficulty}
-                    </span>
-                  )}
-                </div>
-              )}
-            </div>
-          )}
           {timetable.get(selectedDate.toISOString()) && (
             <div className="mb-6 p-4 bg-gray-700 rounded-lg">
               <div className="flex items-start justify-between gap-4">
@@ -527,29 +402,16 @@ export default function TimeTable({ initialData }) {
         {showAllTasks && (
           <div className="mt-8 w-full bg-gray-800 rounded-lg p-6 space-y-4">
             <h2 className="text-2xl font-bold text-center text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-blue-600 mb-6">
-              All Saved Tasks ({Array.from(timetable.entries()).filter(([, data]) => data.aiGenerated).length} AI Generated)
+              All Saved Tasks
             </h2>
             {Array.from(timetable.entries()).map(([dateStr, data]) => (
-              <div key={dateStr} className={`p-4 rounded-lg hover:bg-gray-600 transition-colors ${
-                data.aiGenerated ? 'bg-gradient-to-r from-gray-700 to-purple-900/30 border border-purple-500/20' : 'bg-gray-700'
-              }`}>
+              <div key={dateStr} className="p-4 rounded-lg hover:bg-gray-600 transition-colors bg-gray-700">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
                       <p className="text-sm text-blue-400">
                         {format(new Date(dateStr), "MMMM d, yyyy")}
                       </p>
-                      {data.aiGenerated && (
-                        <div className="flex items-center gap-1 text-xs text-purple-400">
-                          <Bot className="w-3 h-3" />
-                          <span>AI</span>
-                          {data.difficulty && (
-                            <span className="px-2 py-1 bg-purple-600/20 rounded">
-                              {data.difficulty}
-                            </span>
-                          )}
-                        </div>
-                      )}
                     </div>
                     <p className="text-white text-lg break-words">
                       {data.task}
@@ -569,23 +431,6 @@ export default function TimeTable({ initialData }) {
                       />
                       <span className="text-base text-gray-300">Completed</span>
                     </div>
-                    {data.resources && data.resources.length > 0 && (
-                      <div className="mt-2">
-                        <p className="text-xs text-gray-400 mb-1">Resources:</p>
-                        <div className="flex flex-wrap gap-1">
-                          {data.resources.slice(0, 3).map((resource, idx) => (
-                            <span key={idx} className="px-2 py-1 bg-blue-600/20 text-xs text-blue-300 rounded">
-                              {resource}
-                            </span>
-                          ))}
-                          {data.resources.length > 3 && (
-                            <span className="px-2 py-1 bg-gray-600 text-xs text-gray-300 rounded">
-                              +{data.resources.length - 3} more
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    )}
                   </div>
                   <Button
                     onClick={() => {
@@ -604,14 +449,6 @@ export default function TimeTable({ initialData }) {
         )}
       </div>
       </div>
-      
-      {/* AI Prompt Modal */}
-      {showAIPrompt && (
-        <AIPrompt 
-          onTimetableGenerated={handleAITimetableGenerated}
-          onClose={() => setShowAIPrompt(false)}
-        />
-      )}
     </div>
   );
 }
