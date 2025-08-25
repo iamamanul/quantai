@@ -16,6 +16,7 @@ const isPublicApiRoute = createRouteMatcher([
 
 export default clerkMiddleware(async (auth, req) => {
   // Skip auth for public API routes
+  //hi
   if (isPublicApiRoute(req)) {
     return NextResponse.next();
   }
