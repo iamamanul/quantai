@@ -1,9 +1,7 @@
 "use server";
 
-import { PrismaClient } from "@prisma/client";
+import { db } from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
-
-const prisma = new PrismaClient();
 import { revalidatePath } from "next/cache";
 import { generateAIInsights } from "./dashboard";
 
@@ -11,7 +9,7 @@ export async function updateUser(data) {
   const { userId } = await auth();
   if (!userId) throw new Error("Unauthorized");
 
-  const user = await prisma.user.findUnique({
+  const user = await db.user.findUnique({
     where: { clerkUserId: userId },
   });
 
@@ -19,7 +17,7 @@ export async function updateUser(data) {
 
   try {
     // Start a transaction to handle both operations
-    const result = await prisma.$transaction(
+    const result = await db.$transaction(
       async (tx) => {
         // First check if industry exists
         let industryInsight = await tx.industryInsight.findUnique({
@@ -32,7 +30,7 @@ export async function updateUser(data) {
         if (!industryInsight) {
           const insights = await generateAIInsights(data.industry);
 
-          industryInsight = await prisma.industryInsight.create({
+          industryInsight = await db.industryInsight.create({
             data: {
               industry: data.industry,
               ...insights,
@@ -73,14 +71,14 @@ export async function getUserOnboardingStatus() {
   const { userId } = await auth();
   if (!userId) throw new Error("Unauthorized");
 
-  const user = await prisma.user.findUnique({
+  const user = await db.user.findUnique({
     where: { clerkUserId: userId },
   });
 
   if (!user) throw new Error("User not found");
 
   try {
-    const user = await prisma.user.findUnique({
+    const user = await db.user.findUnique({
       where: {
         clerkUserId: userId,
       },
