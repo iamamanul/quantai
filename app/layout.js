@@ -17,8 +17,15 @@ export const metadata = {
 export default function RootLayout({ children }) {
   const clerkPublishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
   
-  // Skip ClerkProvider during build if no valid key is available
-  if (!clerkPublishableKey || clerkPublishableKey.startsWith('pk_test_Y2xlcmsu')) {
+  // Skip ClerkProvider during build if no valid key is available or if we're in Netlify build
+  const isNetlifyBuild = process.env.NETLIFY === 'true' && process.env.NODE_ENV === 'production';
+  const isInvalidKey = !clerkPublishableKey || 
+    clerkPublishableKey.startsWith('pk_test_Y2xlcmsu') ||
+    clerkPublishableKey.length < 20 ||
+    clerkPublishableKey === 'your-clerk-publishable-key' ||
+    clerkPublishableKey.includes('****');
+    
+  if (isInvalidKey || isNetlifyBuild) {
     return (
       <html lang="en" suppressHydrationWarning>
         <head>
