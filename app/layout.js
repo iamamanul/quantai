@@ -15,9 +15,13 @@ export const metadata = {
 };
 
 export default function RootLayout({ children }) {
+  // Use a valid dummy key format for build time if the real key is missing
+  const clerkPublishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY || 
+    "pk_test_Y2xlcmsuaW5jbHVkZWQua2F0eWRpZC05Mi5sY2wuZGV2JA";
+  
   return (
     <ClerkProvider
-      publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY}
+      publishableKey={clerkPublishableKey}
       appearance={{
         baseTheme: dark,
       }}
