@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import MDEditor from "@uiw/react-md-editor";
 import { Button } from "@/components/ui/button";
 import { Download, Edit, Eye, FileText } from "lucide-react";
-import html2pdf from "html2pdf.js/dist/html2pdf.min.js";
+// Dynamic import for html2pdf to avoid SSR issues
 import { toast } from "sonner";
 import { updateCoverLetter } from "@/actions/cover-letter";
 
@@ -17,7 +17,21 @@ const CoverLetterPreview = ({ content, coverLetterId }) => {
   const generatePDF = async () => {
     setIsGeneratingPDF(true);
     try {
+      // Check if we're in the browser
+      if (typeof window === 'undefined') {
+        toast.error("PDF generation is not available during server rendering");
+        return;
+      }
+
+      // Dynamic import to avoid SSR issues
+      const html2pdf = (await import("html2pdf.js/dist/html2pdf.min.js")).default;
+      
       const element = document.getElementById("cover-letter-pdf");
+      if (!element) {
+        toast.error("Cover letter content not found");
+        return;
+      }
+
       const opt = {
         margin: [15, 15],
         filename: "cover-letter.pdf",

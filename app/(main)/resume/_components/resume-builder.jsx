@@ -28,7 +28,7 @@ import useFetch from "@/hooks/use-fetch";
 import { useUser } from "@clerk/nextjs";
 import { generateATSResume } from "@/app/lib/helper";
 import { resumeSchema } from "@/app/lib/schema";
-import html2pdf from "html2pdf.js/dist/html2pdf.min.js";
+// Dynamic import for html2pdf to avoid SSR issues
 import ResumePreview from "./resume-preview";
 
 export default function ResumeBuilder({ initialContent }) {
@@ -173,7 +173,21 @@ export default function ResumeBuilder({ initialContent }) {
   const generatePDF = async () => {
     setIsGenerating(true);
     try {
+      // Check if we're in the browser
+      if (typeof window === 'undefined') {
+        toast.error("PDF generation is not available during server rendering");
+        return;
+      }
+
+      // Dynamic import to avoid SSR issues
+      const html2pdf = (await import("html2pdf.js/dist/html2pdf.min.js")).default;
+      
       const element = document.getElementById("resume-pdf");
+      if (!element) {
+        toast.error("Resume content not found");
+        return;
+      }
+
       const opt = {
         margin: [10, 10],
         filename: `${user?.fullName || 'resume'}.pdf`,
