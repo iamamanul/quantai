@@ -71,18 +71,6 @@ model CoverLetter {
   @@index([userId])
 }
 
-model TimeTable {
-  id          String    @id @default(cuid())
-  userId      String
-  date        DateTime
-  task        String
-  completed   Boolean   @default(false)
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-
-  @@index([userId])
-}
-
 // Combined Industry Trends and Salary Insights
 model IndustryInsight {
   id            String    @id @default(cuid())
