@@ -205,7 +205,7 @@ export default function CoverLetterGenerator() {
         <CardHeader>
           <CardTitle className="text-2xl">Job Details</CardTitle>
           <CardDescription>
-            Provide comprehensive information about the position you're applying for
+            Provide comprehensive information about the position you&apos;re applying for
           </CardDescription>
         </CardHeader>
         <CardContent>

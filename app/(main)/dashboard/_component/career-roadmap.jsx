@@ -82,7 +82,7 @@ const CareerRoadmap = ({ insights, userSkills = [], userExperience = 0, careerRo
             Your Career Position
           </CardTitle>
           <CardDescription>
-            Based on your experience and skills, here's where you stand in your career journey
+            Based on your experience and skills, here&apos;s where you stand in your career journey
           </CardDescription>
         </CardHeader>
         <CardContent>

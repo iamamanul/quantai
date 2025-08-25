@@ -283,7 +283,7 @@ export default function ResumeBuilder({ initialContent }) {
               ATS Analysis & Feedback
             </CardTitle>
             <CardDescription>
-              AI-powered analysis of your resume's ATS compatibility
+              AI-powered analysis of your resume&apos;s ATS compatibility
             </CardDescription>
           </CardHeader>
           <CardContent>
