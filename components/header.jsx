@@ -1,4 +1,6 @@
-import React from "react";
+"use client";
+
+import React, { useEffect } from "react";
 import { Button } from "./ui/button";
 import {
   PenBox,
@@ -9,7 +11,7 @@ import {
   StarsIcon,
 } from "lucide-react";
 import Link from "next/link";
-import { SignedIn, SignedOut, SignInButton, UserButton } from "@clerk/nextjs";
+import { SignedIn, SignedOut, SignInButton, UserButton, useUser } from "@clerk/nextjs";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,10 +19,58 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import Image from "next/image";
-import { checkUser } from "@/lib/checkUser";
 
-export default async function Header() {
-  await checkUser();
+export default function Header() {
+  const { user, isLoaded } = useUser();
+
+  // Sync user with database when user loads
+  useEffect(() => {
+    const syncUser = async () => {
+      if (user) {
+        try {
+          // Call a client-side API to sync user
+          await fetch('/api/user-sync', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              clerkUserId: user.id,
+              name: `${user.firstName} ${user.lastName}`,
+              email: user.emailAddresses[0]?.emailAddress,
+              imageUrl: user.imageUrl,
+            }),
+          });
+        } catch (error) {
+          console.error('User sync failed:', error);
+        }
+      }
+    };
+
+    if (isLoaded && user) {
+      syncUser();
+    }
+  }, [user, isLoaded]);
+
+  // Don't render anything until Clerk is loaded to prevent hydration mismatch
+  if (!isLoaded) {
+    return (
+      <header className="fixed top-0 w-full border-b bg-background/80 backdrop-blur-md z-50 supports-[backdrop-filter]:bg-background/60">
+        <nav className="container mx-auto px-4 h-18 flex items-center justify-between">
+          <Link href="/">
+            <Image
+              src={"/logo.png"}
+              alt=" QuantAI Logo"
+              width={200}
+              height={60}
+              className="h-[6rem] w-auto object-contain"
+            />
+          </Link>
+          <div className="flex items-center space-x-2 md:space-x-4">
+            {/* Loading state */}
+          </div>
+        </nav>
+      </header>
+    );
+  }
 
   return (
     <header className="fixed top-0 w-full border-b bg-background/80 backdrop-blur-md z-50 supports-[backdrop-filter]:bg-background/60">
