@@ -1,9 +1,7 @@
 "use server";
 
-import { PrismaClient } from "@prisma/client";
+import { db } from "@/lib/prisma";
 import { auth } from "@clerk/nextjs/server";
-
-const prisma = new PrismaClient();
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { jsonrepair } from "jsonrepair";
 
@@ -14,7 +12,7 @@ export async function generateQuiz(provider = "gemini") {
   const { userId } = await auth();
   if (!userId) throw new Error("Unauthorized");
 
-  const user = await prisma.user.findUnique({
+  const user = await db.user.findUnique({
     where: { clerkUserId: userId },
     select: {
       industry: true,
@@ -166,7 +164,7 @@ export async function saveQuizResult(questions, answers, score) {
   const { userId } = await auth();
   if (!userId) throw new Error("Unauthorized");
 
-  const user = await prisma.user.findUnique({
+  const user = await db.user.findUnique({
     where: { clerkUserId: userId },
   });
 
@@ -216,7 +214,7 @@ export async function saveQuizResult(questions, answers, score) {
   }
 
   try {
-    const assessment = await prisma.assessment.create({
+    const assessment = await db.assessment.create({
       data: {
         userId: user.id,
         quizScore: score,
@@ -237,14 +235,14 @@ export async function getAssessments() {
   const { userId } = await auth();
   if (!userId) throw new Error("Unauthorized");
 
-  const user = await prisma.user.findUnique({
+  const user = await db.user.findUnique({
     where: { clerkUserId: userId },
   });
 
   if (!user) throw new Error("User not found");
 
   try {
-    const assessments = await prisma.assessment.findMany({
+    const assessments = await db.assessment.findMany({
       where: {
         userId: user.id,
       },
