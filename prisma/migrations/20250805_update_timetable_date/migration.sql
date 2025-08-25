@@ -1,5 +1,0 @@
--- DropColumn
-ALTER TABLE "TimeTable" DROP COLUMN "day";
-
--- AddColumn
-ALTER TABLE "TimeTable" ADD COLUMN "date" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
