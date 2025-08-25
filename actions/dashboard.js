@@ -1,9 +1,7 @@
 "use server";
 
-import { PrismaClient } from "@prisma/client";
+import { db } from "@/lib/prisma";
 import { auth, currentUser } from "@clerk/nextjs/server";
-
-const prisma = new PrismaClient();
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
@@ -217,7 +215,7 @@ export async function getIndustryInsights(provider = "gemini", forceRefresh = fa
     clerkUser = null;
   }
 
-  const user = await prisma.user.findUnique({
+  const user = await db.user.findUnique({
     where: { clerkUserId: userId },
   });
 
