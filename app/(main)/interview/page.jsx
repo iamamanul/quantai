@@ -55,9 +55,9 @@ function InterviewContent() {
   const list = Array.isArray(assessments) ? assessments : [];
 
   return (
-    <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl shadow-2xl border border-blue-700/50 p-4 sm:p-6 lg:p-8">
-      <div className="flex items-center justify-between mb-5">
-        <h1 className="text-6xl font-bold gradient-title">
+    <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl shadow-2xl border border-blue-700/50 p-3 sm:p-6 lg:p-8">
+      <div className="flex items-center justify-between mb-4 sm:mb-5">
+        <h1 className="text-3xl sm:text-5xl lg:text-6xl font-bold gradient-title">
           Interview Preparation
         </h1>
       </div>

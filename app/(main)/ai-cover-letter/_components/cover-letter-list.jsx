@@ -64,26 +64,26 @@ export default function CoverLetterList({ coverLetters }) {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3 sm:space-y-4">
       {coverLetters.map((letter) => (
         <Card key={letter.id} className="group relative hover:shadow-lg transition-shadow duration-200 border-l-4 border-l-blue-500">
           <CardHeader>
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-2">
-                  <Badge variant="secondary" className="text-xs">
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex-1 min-w-0">
+                <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-2">
+                  <Badge variant="secondary" className="text-[10px] sm:text-xs">
                     <Briefcase className="h-3 w-3 mr-1" />
                     {letter.jobTitle}
                   </Badge>
-                  <Badge variant="outline" className="text-xs">
+                  <Badge variant="outline" className="text-[10px] sm:text-xs">
                     <Building2 className="h-3 w-3 mr-1" />
                     {letter.companyName}
                   </Badge>
                 </div>
-                <CardTitle className="text-xl gradient-title mb-2">
+                <CardTitle className="text-lg sm:text-xl gradient-title mb-2 truncate">
                   {letter.jobTitle} at {letter.companyName}
                 </CardTitle>
-                <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-xs sm:text-sm text-muted-foreground">
                   <div className="flex items-center gap-1">
                     <Calendar className="h-4 w-4" />
                     {format(new Date(letter.createdAt), "MMM dd, yyyy")}
@@ -94,7 +94,7 @@ export default function CoverLetterList({ coverLetters }) {
                   </div>
                 </div>
               </div>
-              <div className="flex space-x-2">
+              <div className="flex items-center gap-2 sm:gap-2 flex-shrink-0">
                 <Button
                   variant="outline"
                   size="sm"
@@ -138,7 +138,7 @@ export default function CoverLetterList({ coverLetters }) {
             </div>
           </CardHeader>
           <CardContent>
-            <div className="text-muted-foreground text-sm line-clamp-3 bg-muted/30 p-3 rounded-md">
+            <div className="text-muted-foreground text-sm sm:text-base line-clamp-3 bg-muted/30 p-2 sm:p-3 rounded-md">
               {letter.jobDescription?.length > 200 
                 ? `${letter.jobDescription.substring(0, 200)}...` 
                 : letter.jobDescription

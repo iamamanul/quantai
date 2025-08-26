@@ -45,6 +45,8 @@ export default function UserProfile({ user }) {
 
   if (!user) return null;
 
+  const industryDisplay = (user.industry || "").replace(/[-_]/g, " \u2022 ");
+
   const onChange = (e) => {
     const { name, value } = e.target;
     setForm((f) => ({ ...f, [name]: name === "experience" ? value.replace(/[^0-9]/g, "") : value }));
@@ -131,14 +133,14 @@ export default function UserProfile({ user }) {
               </DialogContent>
             </Dialog>
           </div>
-          <div className="flex flex-wrap gap-4 mt-3 items-center justify-center md:justify-start text-center md:text-left">
+          <div className="flex flex-wrap gap-3 md:gap-4 mt-3 items-center justify-center md:justify-start text-center md:text-left">
             {user.industry && (
-              <span className="flex items-center gap-1 text-base font-medium text-slate-200">
+              <span className="inline-flex items-center gap-1.5 text-sm md:text-base font-medium text-slate-200">
                 <Briefcase className="w-4 h-4 text-slate-200" />
-                <span className="capitalize">{user.industry}</span>
+                <span className="capitalize leading-snug whitespace-nowrap sm:whitespace-normal">{industryDisplay}</span>
               </span>
             )}
-            <span className="flex items-center gap-1 text-base font-medium text-slate-200">
+            <span className="inline-flex items-center gap-1.5 text-sm md:text-base font-medium text-slate-200">
               <Layers className="w-4 h-4 text-slate-200" />
               {user.experience || 0} yrs experience
             </span>

@@ -13,8 +13,8 @@ export default function QuizResult({
   if (!result) return null;
 
   return (
-    <div className="mx-auto">
-      <h1 className="flex items-center gap-2 text-3xl gradient-title">
+    <div className="mx-auto px-1 sm:px-2">
+      <h1 className="flex items-center gap-2 text-2xl sm:text-3xl gradient-title">
         <Trophy className="h-6 w-6 text-yellow-500" />
         Quiz Results
       </h1>
@@ -38,7 +38,7 @@ export default function QuizResult({
         <div className="space-y-4">
           <h3 className="font-medium">Question Review</h3>
           {result.questions.map((q, index) => (
-            <div key={index} className="border rounded-lg p-4 space-y-2">
+            <div key={index} className="border rounded-lg p-3 sm:p-4 space-y-2">
               <div className="flex items-start justify-between gap-2">
                 <p className="font-medium">{q.question}</p>
                 {q.isCorrect ? (

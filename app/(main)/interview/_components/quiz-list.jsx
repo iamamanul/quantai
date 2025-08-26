@@ -28,16 +28,16 @@ export default function QuizList({ assessments }) {
     <>
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between gap-3">
             <div>
-              <CardTitle className="gradient-title text-3xl md:text-4xl">
+              <CardTitle className="gradient-title text-2xl sm:text-3xl md:text-4xl">
                 Recent Quizzes
               </CardTitle>
               <CardDescription>
                 Review your past quiz performance
               </CardDescription>
             </div>
-            <Button onClick={() => router.push("/interview/mock")}>
+            <Button size="sm" className="mt-2 sm:mt-0" onClick={() => router.push("/interview/mock")}> 
               Start New Quiz
             </Button>
           </div>
@@ -51,12 +51,12 @@ export default function QuizList({ assessments }) {
                 onClick={() => setSelectedQuiz(assessment)}
               >
                 <CardHeader>
-                  <CardTitle className="gradient-title text-2xl">
+                  <CardTitle className="gradient-title text-xl sm:text-2xl">
                     Quiz {i + 1}
                   </CardTitle>
-                  <CardDescription className="flex justify-between w-full">
-                    <div>Score: {assessment.quizScore.toFixed(1)}%</div>
-                    <div>
+                  <CardDescription className="flex flex-col sm:flex-row sm:justify-between w-full gap-1">
+                    <div className="text-sm sm:text-base">Score: {assessment.quizScore.toFixed(1)}%</div>
+                    <div className="text-xs sm:text-sm">
                       {format(
                         new Date(assessment.createdAt),
                         "MMMM dd, yyyy HH:mm"

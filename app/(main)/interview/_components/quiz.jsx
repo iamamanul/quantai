@@ -204,7 +204,7 @@ export default function Quiz({ provider = "gemini" }) {
           </div>
         )}
       </CardContent>
-      <CardFooter className="flex justify-between">
+      <CardFooter className="flex flex-col sm:flex-row gap-3 justify-between">
         {!showExplanation && (
           <Button
             onClick={() => setShowExplanation(true)}
@@ -217,7 +217,7 @@ export default function Quiz({ provider = "gemini" }) {
         <Button
           onClick={handleNext}
           disabled={!answers[currentQuestion] || savingResult}
-          className="ml-auto"
+          className="sm:ml-auto w-full sm:w-auto"
         >
           {savingResult && (
             <BarLoader className="mt-4" width={"100%"} color="gray" />
