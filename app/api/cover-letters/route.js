@@ -1,3 +1,4 @@
+export const runtime = "nodejs";
 import crypto from "crypto";
 import { getCoverLetters } from "@/actions/cover-letter";
 

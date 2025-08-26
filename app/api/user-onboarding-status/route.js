@@ -1,3 +1,4 @@
+export const runtime = "nodejs";
 import { getUserOnboardingStatus } from "@/actions/user";
 
 export async function GET(req) {

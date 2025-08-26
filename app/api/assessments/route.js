@@ -1,3 +1,4 @@
+export const runtime = "nodejs";
 import { getAssessments } from "@/actions/interview";
 
 export async function GET(req) {
