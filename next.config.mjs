@@ -1,3 +1,4 @@
+import 'dotenv/config';
 import { fileURLToPath } from 'url';
 
 /** @type {import('next').NextConfig} */

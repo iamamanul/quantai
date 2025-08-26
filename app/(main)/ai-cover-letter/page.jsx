@@ -9,7 +9,18 @@ import { useRef, useEffect, useState } from "react";
 
 export const dynamic = "force-dynamic";
 
-const fetcher = (url) => fetch(url).then((res) => res.json());
+const fetcher = async (url) => {
+  const res = await fetch(url);
+  let data = null;
+  try {
+    data = await res.json();
+  } catch {}
+  if (!res.ok) {
+    const msg = (data && data.error) || `Request failed ${res.status}`;
+    throw new Error(msg);
+  }
+  return data;
+};
 
 export default function CoverLetterPage() {
   const [isClient, setIsClient] = useState(false);
@@ -44,27 +55,29 @@ function CoverLetterContent() {
   if (isLoading) return <div>Loading...</div>;
   if (error) return <div>Error loading cover letters.</div>;
 
+  const list = Array.isArray(coverLetters) ? coverLetters : [];
+
   return (
-    <div className="space-y-6">
+    <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl shadow-2xl border border-blue-700/50 p-4 sm:p-6 lg:p-8 space-y-6">
       {/* Header Section */}
       <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
         <div className="space-y-2">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
+            <div className="w-12 h-12 bg-gradient-to-br from-slate-700 to-slate-800 rounded-lg border border-slate-600 flex items-center justify-center">
               <FileText className="h-6 w-6 text-white" />
             </div>
             <div>
               <h1 className="text-4xl md:text-6xl font-bold gradient-title">
                 My Cover Letters
               </h1>
-              <p className="text-muted-foreground text-lg">
+              <p className="text-slate-300 text-lg">
                 AI-powered cover letters tailored to your applications
               </p>
             </div>
           </div>
         </div>
         <Link href="/ai-cover-letter/new">
-          <Button size="lg" className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700">
+          <Button size="lg" className="bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white border border-emerald-400/50">
             <Plus className="h-5 w-5 mr-2" />
             Create New
           </Button>
@@ -73,39 +86,39 @@ function CoverLetterContent() {
 
       {/* Stats Section */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-gradient-to-r from-blue-50 to-blue-100 p-6 rounded-lg border border-blue-200">
+        <div className="bg-gradient-to-br from-slate-700 to-slate-800 p-6 rounded-lg border border-slate-600">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+            <div className="w-10 h-10 bg-slate-900 rounded-lg border border-slate-700 flex items-center justify-center">
               <FileText className="h-5 w-5 text-white" />
             </div>
             <div>
-              <p className="text-sm text-blue-600 font-medium">Total Cover Letters</p>
-              <p className="text-2xl font-bold text-blue-900">{coverLetters.length}</p>
+              <p className="text-sm text-slate-300 font-medium">Total Cover Letters</p>
+              <p className="text-2xl font-bold text-white">{list.length}</p>
             </div>
           </div>
         </div>
-        <div className="bg-gradient-to-r from-purple-50 to-purple-100 p-6 rounded-lg border border-purple-200">
+        <div className="bg-gradient-to-br from-slate-700 to-slate-800 p-6 rounded-lg border border-slate-600">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-purple-600 rounded-lg flex items-center justify-center">
+            <div className="w-10 h-10 bg-slate-900 rounded-lg border border-slate-700 flex items-center justify-center">
               <Sparkles className="h-5 w-5 text-white" />
             </div>
             <div>
-              <p className="text-sm text-purple-600 font-medium">AI Generated</p>
-              <p className="text-2xl font-bold text-purple-900">
-                {coverLetters.filter(letter => letter.status === "completed").length}
+              <p className="text-sm text-slate-300 font-medium">AI Generated</p>
+              <p className="text-2xl font-bold text-white">
+                {list.filter(letter => letter.status === "completed").length}
               </p>
             </div>
           </div>
         </div>
-        <div className="bg-gradient-to-r from-green-50 to-green-100 p-6 rounded-lg border border-green-200">
+        <div className="bg-gradient-to-br from-slate-700 to-slate-800 p-6 rounded-lg border border-slate-600">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-green-600 rounded-lg flex items-center justify-center">
+            <div className="w-10 h-10 bg-slate-900 rounded-lg border border-slate-700 flex items-center justify-center">
               <FileText className="h-5 w-5 text-white" />
             </div>
             <div>
-              <p className="text-sm text-green-600 font-medium">Ready to Use</p>
-              <p className="text-2xl font-bold text-green-900">
-                {coverLetters.filter(letter => letter.status === "completed").length}
+              <p className="text-sm text-slate-300 font-medium">Ready to Use</p>
+              <p className="text-2xl font-bold text-white">
+                {list.filter(letter => letter.status === "completed").length}
               </p>
             </div>
           </div>
@@ -116,13 +129,13 @@ function CoverLetterContent() {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-2xl font-semibold">Recent Cover Letters</h2>
-          {coverLetters.length > 0 && (
-            <Badge variant="outline" className="text-sm">
-              {coverLetters.length} {coverLetters.length === 1 ? 'letter' : 'letters'}
+          {list.length > 0 && (
+            <Badge variant="outline" className="text-sm border-slate-600 text-slate-300">
+              {list.length} {list.length === 1 ? 'letter' : 'letters'}
             </Badge>
           )}
         </div>
-        <CoverLetterList coverLetters={coverLetters} />
+        <CoverLetterList coverLetters={list} />
       </div>
     </div>
   );

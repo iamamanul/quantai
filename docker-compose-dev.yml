@@ -7,3 +7,9 @@ services:
       - "3000:3000"
     volumes:
       - .:/src
+    env_file:
+      - .env
+    environment:
+      # Ensure Next runs in dev and sees envs
+      - NODE_ENV=development
+    

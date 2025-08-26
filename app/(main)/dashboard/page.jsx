@@ -132,11 +132,13 @@ function IndustryInsightsContent({ swrKey }) {
     const { insights, user, careerRoadmap } = lastGoodData.current;
     return (
       <div className="container mx-auto">
-        <DashboardView
-          insights={insights}
-          user={user}
-          careerRoadmap={careerRoadmap}
-        />
+        <div className="rounded-xl bg-gradient-to-br from-slate-800 to-slate-900 border border-blue-700/50 shadow-xl p-4 md:p-6">
+          <DashboardView
+            insights={insights}
+            user={user}
+            careerRoadmap={careerRoadmap}
+          />
+        </div>
       </div>
     );
   }
@@ -159,11 +161,13 @@ function IndustryInsightsContent({ swrKey }) {
 
   return (
     <div className="container mx-auto">
-      <DashboardView
-        insights={insights}
-        user={user}
-        careerRoadmap={careerRoadmap}
-      />
+      <div className="rounded-xl bg-gradient-to-br from-slate-800 to-slate-900 border border-blue-700/50 shadow-xl p-4 md:p-6">
+        <DashboardView
+          insights={insights}
+          user={user}
+          careerRoadmap={careerRoadmap}
+        />
+      </div>
     </div>
   );
 }

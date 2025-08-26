@@ -7,7 +7,16 @@ import { useRef, useEffect, useState } from "react";
 
 export const dynamic = "force-dynamic";
 
-const fetcher = (url) => fetch(url).then((res) => res.json());
+// Robust fetcher: return [] on 401, throw on other non-OK, else JSON
+const fetcher = async (url) => {
+  const res = await fetch(url);
+  if (res.status === 401) return [];
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(text || `Request failed: ${res.status}`);
+  }
+  return res.json();
+};
 
 export default function InterviewPrepPage() {
   const [isClient, setIsClient] = useState(false);
@@ -42,17 +51,20 @@ function InterviewContent() {
   if (isLoading) return <div>Loading...</div>;
   if (error) return <div>Error loading assessments.</div>;
 
+  // Always provide an array to children
+  const list = Array.isArray(assessments) ? assessments : [];
+
   return (
-    <div>
+    <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl shadow-2xl border border-blue-700/50 p-4 sm:p-6 lg:p-8">
       <div className="flex items-center justify-between mb-5">
         <h1 className="text-6xl font-bold gradient-title">
           Interview Preparation
         </h1>
       </div>
       <div className="space-y-6">
-        <StatsCards assessments={assessments} />
-        <PerformanceChart assessments={assessments} />
-        <QuizList assessments={assessments} />
+        <StatsCards assessments={list} />
+        <PerformanceChart assessments={list} />
+        <QuizList assessments={list} />
       </div>
     </div>
   );

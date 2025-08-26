@@ -152,7 +152,7 @@ export function EntryForm({ type, entries, onChange }) {
     <div className="space-y-4">
       <div className="space-y-4">
         {entries.map((item, index) => (
-          <Card key={index}>
+          <Card key={index} className="bg-slate-800 border border-slate-600">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
                 {type === "Education"
@@ -202,62 +202,18 @@ export function EntryForm({ type, entries, onChange }) {
       </div>
 
       {isAdding && (
-        <Card>
+        <Card className="bg-slate-800 border border-slate-600">
           <CardHeader>
             <CardTitle>Add {type}</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {/* Education-specific fields */}
-            {type === "Education" && (
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Input
-                    placeholder="Institution"
-                    {...register("institution")}
-                    error={errors.institution}
-                  />
-                  {errors.institution && (
-                    <p className="text-sm text-red-500">{errors.institution.message}</p>
-                  )}
-                </div>
-                <div className="space-y-2">
-                  <Input
-                    placeholder="Degree"
-                    {...register("degree")}
-                    error={errors.degree}
-                  />
-                  {errors.degree && (
-                    <p className="text-sm text-red-500">{errors.degree.message}</p>
-                  )}
-                </div>
-                <div className="space-y-2">
-                  <Input
-                    placeholder="Location"
-                    {...register("location")}
-                    error={errors.location}
-                  />
-                  {errors.location && (
-                    <p className="text-sm text-red-500">{errors.location.message}</p>
-                  )}
-                </div>
-                <div className="space-y-2">
-                  <Input
-                    placeholder="Grade (optional)"
-                    {...register("grade")}
-                    error={errors.grade}
-                  />
-                  {errors.grade && (
-                    <p className="text-sm text-red-500">{errors.grade.message}</p>
-                  )}
-                </div>
-              </div>
-            )}
             <div className="grid grid-cols-2 gap-4">
               {type !== "Education" && (
                 <>
                   <div className="space-y-2">
                     <Input
                       placeholder="Title/Position"
+                      className="border border-slate-600 bg-slate-700 focus-visible:ring-blue-500/30"
                       {...register("title")}
                       error={errors.title}
                     />
@@ -268,6 +224,7 @@ export function EntryForm({ type, entries, onChange }) {
                   <div className="space-y-2">
                     <Input
                       placeholder="Organization/Company"
+                      className="border border-slate-600 bg-slate-700 focus-visible:ring-blue-500/30"
                       {...register("organization")}
                       error={errors.organization}
                     />
@@ -277,12 +234,63 @@ export function EntryForm({ type, entries, onChange }) {
                   </div>
                 </>
               )}
+              {type === "Education" && (
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Input
+                      placeholder="Institution"
+                      className="border border-slate-600 bg-slate-700 focus-visible:ring-blue-500/30"
+                      {...register("institution")}
+                      error={errors.institution}
+                    />
+                    {errors.institution && (
+                      <p className="text-sm text-red-500">{errors.institution.message}</p>
+                    )}
+                  </div>
+                  <div className="space-y-2">
+                    <Input
+                      placeholder="Degree"
+                      className="border border-slate-600 bg-slate-700 focus-visible:ring-blue-500/30"
+                      {...register("degree")}
+                      error={errors.degree}
+                    />
+                    {errors.degree && (
+                      <p className="text-sm text-red-500">{errors.degree.message}</p>
+                    )}
+                  </div>
+                  <div className="space-y-2">
+                    <Input
+                      placeholder="Location"
+                      className="border border-slate-600 bg-slate-700 focus-visible:ring-blue-500/30"
+                      {...register("location")}
+                      error={errors.location}
+                    />
+                    {errors.location && (
+                      <p className="text-sm text-red-500">{errors.location.message}</p>
+                    )}
+                  </div>
+                  <div className="space-y-2">
+                    <Input
+                      placeholder="Grade (optional)"
+                      className="border border-slate-600 bg-slate-700 focus-visible:ring-blue-500/30"
+                      {...register("grade")}
+                      error={errors.grade}
+                    />
+                    {errors.grade && (
+                      <p className="text-sm text-red-500">{errors.grade.message}</p>
+                    )}
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
+                <label htmlFor="startDate" className="text-sm font-medium">Start Date</label>
                 <Input
+                  id="startDate"
                   type="month"
+                  className="border border-slate-600 bg-slate-700 focus-visible:ring-blue-500/30"
                   {...register("startDate")}
                   error={errors.startDate}
                 />
@@ -293,8 +301,11 @@ export function EntryForm({ type, entries, onChange }) {
                 )}
               </div>
               <div className="space-y-2">
+                <label htmlFor="endDate" className="text-sm font-medium">End Date</label>
                 <Input
+                  id="endDate"
                   type="month"
+                  className="border border-slate-600 bg-slate-700 focus-visible:ring-blue-500/30"
                   {...register("endDate")}
                   disabled={current}
                   error={errors.endDate}
@@ -327,7 +338,7 @@ export function EntryForm({ type, entries, onChange }) {
               <div className="space-y-2">
                 <Textarea
                   placeholder={`Description of your ${type.toLowerCase()}`}
-                  className="h-32"
+                  className="h-32 border border-slate-600 bg-slate-700 focus-visible:ring-blue-500/30"
                   {...register("description")}
                   error={errors.description}
                 />

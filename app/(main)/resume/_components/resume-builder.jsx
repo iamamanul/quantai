@@ -290,7 +290,7 @@ export default function ResumeBuilder({ initialContent }) {
 
       {/* ATS Feedback Section */}
       {atsFeedback && (
-        <Card className="border-l-4 border-l-blue-500">
+        <Card className="border-l-4 border-l-blue-500 bg-slate-800 border border-slate-600">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Target className="h-5 w-5" />
@@ -324,7 +324,7 @@ export default function ResumeBuilder({ initialContent }) {
             {/* Contact Information */}
             <div className="space-y-4">
               <h3 className="text-lg font-medium">Contact Information</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 border rounded-lg bg-muted/50">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 rounded-lg border border-slate-600 bg-slate-700">
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Email</label>
                   <Input
@@ -393,7 +393,7 @@ export default function ResumeBuilder({ initialContent }) {
                   render={({ field }) => (
                     <Textarea
                       {...field}
-                      className="h-32"
+                      className="h-32 border border-slate-500 bg-slate-700 focus-visible:ring-2 focus-visible:ring-blue-500"
                       placeholder="Write a compelling professional summary that highlights your key achievements and career objectives..."
                       error={errors.summary}
                     />
@@ -416,10 +416,14 @@ export default function ResumeBuilder({ initialContent }) {
                         current: summary,
                         type: "summary"
                       });
-                      setValue("summary", improvedSummary);
-                      toast.success("Summary improved successfully!");
-                    } catch {
-                      toast.error("Failed to improve summary");
+                      if (improvedSummary && improvedSummary.trim().length > 0) {
+                        setValue("summary", improvedSummary);
+                        toast.success("Summary improved successfully!");
+                      } else {
+                        toast.error("AI returned an empty response. Please try again.");
+                      }
+                    } catch (e) {
+                      toast.error(e?.message || "Failed to improve summary");
                     } finally {
                       setIsImprovingSummary(false);
                     }
@@ -452,7 +456,7 @@ export default function ResumeBuilder({ initialContent }) {
                 render={({ field }) => (
                   <Textarea
                     {...field}
-                    className="h-32"
+                    className="h-32 border border-slate-500 bg-slate-700 focus-visible:ring-2 focus-visible:ring-blue-500"
                     placeholder="List your key technical and soft skills (e.g., JavaScript, React, Project Management, Leadership)..."
                     error={errors.skills}
                   />
@@ -560,7 +564,7 @@ export default function ResumeBuilder({ initialContent }) {
               </span>
             </div>
           )}
-          <div className="border rounded-lg bg-white">
+          <div className="border border-slate-600 rounded-lg bg-white">
             <ResumePreview formValues={formValues} user={user} />
           </div>
           <div className="hidden">

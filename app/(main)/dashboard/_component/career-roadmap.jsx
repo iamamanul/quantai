@@ -60,7 +60,7 @@ const CareerRoadmap = ({ insights, userSkills = [], userExperience = 0, careerRo
   if (!careerRoadmap) {
     return (
       <div className="space-y-6">
-        <Card>
+        <Card className="bg-slate-800 border border-slate-600">
           <CardContent className="flex items-center justify-center py-8">
             <div className="text-center">
               <AlertCircle className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
@@ -75,7 +75,7 @@ const CareerRoadmap = ({ insights, userSkills = [], userExperience = 0, careerRo
   return (
     <div className="space-y-6">
       {/* Current Position Analysis */}
-      <Card>
+      <Card className="bg-slate-800 border border-slate-600">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <MapPin className="h-5 w-5" />
@@ -113,7 +113,7 @@ const CareerRoadmap = ({ insights, userSkills = [], userExperience = 0, careerRo
       </Card>
 
       {/* Skill Gap Analysis */}
-      <Card>
+      <Card className="bg-slate-800 border border-slate-600">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Target className="h-5 w-5" />
@@ -145,7 +145,7 @@ const CareerRoadmap = ({ insights, userSkills = [], userExperience = 0, careerRo
       </Card>
 
       {/* Career Progression Path */}
-      <Card>
+      <Card className="bg-slate-800 border border-slate-600">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <TrendingUp className="h-5 w-5" />
@@ -202,7 +202,7 @@ const CareerRoadmap = ({ insights, userSkills = [], userExperience = 0, careerRo
       </Card>
 
       {/* Action Items */}
-      <Card>
+      <Card className="bg-slate-800 border border-slate-600">
         <CardHeader>
           <CardTitle>Next Steps</CardTitle>
           <CardDescription>

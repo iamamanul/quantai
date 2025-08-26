@@ -42,7 +42,7 @@ export default function ResumePage() {
     if (error) return <div>Error loading resume.</div>;
 
     return (
-      <div className="py-6">
+      <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-xl shadow-2xl border border-blue-700/50 p-4 sm:p-6 lg:p-8">
         <ResumeBuilder initialContent={data} />
       </div>
     );

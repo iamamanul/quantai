@@ -10,48 +10,44 @@ import { buttonVariants } from "@/components/ui/button"
 function Calendar({
   className,
   classNames,
-  showOutsideDays = true,
+  showOutsideDays = false,
   ...props
 }) {
   return (
     <DayPicker
       showOutsideDays={showOutsideDays}
-      className={cn("p-3", className)}
+      className={cn("p-4 bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 rounded-xl shadow-2xl border border-blue-800/50", className)}
       classNames={{
         months: "flex flex-col sm:flex-row space-y-4 sm:space-x-4 sm:space-y-0",
-        month: "space-y-4",
-        caption: "flex justify-center pt-1 relative items-center",
-        caption_label: "text-sm font-medium",
+        month: "space-y-4 w-full",
+        caption: "flex justify-center pt-2 pb-4 relative items-center",
+        caption_label: "text-lg font-semibold text-white",
         nav: "space-x-1 flex items-center",
         nav_button: cn(
           buttonVariants({ variant: "outline" }),
-          "h-7 w-7 bg-transparent p-0 opacity-50 hover:opacity-100"
+          "h-8 w-8 bg-slate-800 border-blue-700 hover:bg-slate-700 hover:border-blue-600 transition-colors text-white"
         ),
-        nav_button_previous: "absolute left-1",
-        nav_button_next: "absolute right-1",
-        table: "w-full border-collapse space-y-1",
-        head_row: "flex",
-        head_cell:
-          "text-muted-foreground rounded-md w-9 font-normal text-[0.8rem]",
-        row: "flex w-full mt-2",
-        cell: "h-9 w-9 text-center text-sm p-0 relative [&:has([aria-selected])]:bg-accent first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
+        nav_button_previous: "absolute left-2",
+        nav_button_next: "absolute right-2",
+        table: "w-full border-collapse",
+        head_row: "flex w-full",
+        head_cell: "text-blue-300 rounded-md w-full flex-1 font-medium text-sm py-2 text-center",
+        row: "flex w-full mt-1",
+        cell: "flex-1 h-10 text-center text-sm p-0 relative hover:bg-blue-800/30 transition-colors",
         day: cn(
-          buttonVariants({ variant: "ghost" }),
-          "h-9 w-9 p-0 font-normal aria-selected:opacity-100"
+          "h-9 w-9 sm:h-10 sm:w-10 p-0 font-medium text-gray-300 hover:bg-blue-800/50 hover:text-white rounded-full transition-all duration-200 flex items-center justify-center mx-auto"
         ),
-        day_selected:
-          "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground focus:bg-primary focus:text-primary-foreground",
-        day_today: "bg-accent text-accent-foreground",
-        day_outside: "text-muted-foreground opacity-50",
-        day_disabled: "text-muted-foreground opacity-50",
-        day_range_middle:
-          "aria-selected:bg-accent aria-selected:text-accent-foreground",
+        day_selected: "rounded-full bg-gradient-to-r from-blue-600 to-blue-700 text-white hover:from-blue-700 hover:to-blue-800 font-semibold shadow-lg ring-2 ring-blue-400/50",
+        day_today: "rounded-full bg-slate-700 text-white font-semibold ring-2 ring-blue-400",
+        day_outside: "text-gray-600 opacity-40",
+        day_disabled: "text-gray-600 opacity-30 cursor-not-allowed",
+        day_range_middle: "aria-selected:bg-blue-800/30 aria-selected:text-blue-300",
         day_hidden: "invisible",
         ...classNames,
       }}
       components={{
-        IconLeft: () => <ChevronLeft className="h-4 w-4" />,
-        IconRight: () => <ChevronRight className="h-4 w-4" />,
+        IconLeft: () => <ChevronLeft className="h-4 w-4 text-blue-300" />,
+        IconRight: () => <ChevronRight className="h-4 w-4 text-blue-300" />,
       }}
       {...props}
     />

@@ -28,6 +28,7 @@ model User {
   assessments   Assessment[]
   resume        Resume?
   coverLetter   CoverLetter[]
+  timeTable     TimeTable[]
 }
 
 model Assessment {
@@ -98,4 +99,19 @@ model IndustryInsight {
   nextUpdate    DateTime  // Scheduled update time
 
   @@index([industry])
+}
+
+model TimeTable {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id])
+  date        DateTime
+  task        String
+  timeSlot    String    @default("9:00 AM - 10:00 AM")
+  completed   Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([date])
 }

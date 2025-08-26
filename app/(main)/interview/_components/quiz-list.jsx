@@ -22,6 +22,7 @@ import QuizResult from "./quiz-result";
 export default function QuizList({ assessments }) {
   const router = useRouter();
   const [selectedQuiz, setSelectedQuiz] = useState(null);
+  const items = Array.isArray(assessments) ? assessments : [];
 
   return (
     <>
@@ -43,7 +44,7 @@ export default function QuizList({ assessments }) {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {assessments?.map((assessment, i) => (
+            {items.map((assessment, i) => (
               <Card
                 key={assessment.id}
                 className="cursor-pointer hover:bg-muted/50 transition-colors"

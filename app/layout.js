@@ -17,8 +17,13 @@ export const metadata = {
 export default function RootLayout({ children }) {
   const clerkPublishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
   
-  // Use a fallback key for build time that won't cause runtime issues
-  const effectiveKey = clerkPublishableKey || "pk_test_bm90LWEtcmVhbC1rZXktZm9yLWJ1aWxkLXRpbWU";
+  // Fail fast if key is not provided via env
+  const effectiveKey = clerkPublishableKey;
+  if (!effectiveKey) {
+    throw new Error(
+      "Missing NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY. Set it in your .env or .env.local"
+    );
+  }
   
   return (
     <ClerkProvider

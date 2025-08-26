@@ -28,9 +28,23 @@ export async function updateUser(data) {
 
         // If industry doesn't exist, create it with default values
         if (!industryInsight) {
-          const insights = await generateAIInsights(data.industry);
+          let insights;
+          try {
+            insights = await generateAIInsights(data.industry);
+          } catch (e) {
+            // Fallback to safe defaults so onboarding never fails due to AI errors
+            insights = {
+              salaryRanges: [],
+              growthRate: 0,
+              demandLevel: "Medium",
+              topSkills: [],
+              marketOutlook: "Neutral",
+              keyTrends: [],
+              recommendedSkills: [],
+            };
+          }
 
-          industryInsight = await db.industryInsight.create({
+          industryInsight = await tx.industryInsight.create({
             data: {
               industry: data.industry,
               ...insights,
@@ -60,7 +74,7 @@ export async function updateUser(data) {
     );
 
     revalidatePath("/");
-    return result.user;
+    return { success: true };
   } catch (error) {
     console.error("Error updating user and industry:", error.message);
     throw new Error("Failed to update profile");

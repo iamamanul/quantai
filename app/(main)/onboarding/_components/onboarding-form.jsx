@@ -76,8 +76,8 @@ const OnboardingForm = ({ industries }) => {
   const watchIndustry = watch("industry");
 
   return (
-    <div className="flex items-center justify-center bg-background">
-      <Card className="w-full max-w-lg mt-10 mx-2">
+    <div className="flex items-center justify-center bg-gradient-to-br from-slate-800 to-slate-900 p-4 md:p-6 rounded-xl border border-blue-700/50">
+      <Card className="w-full max-w-lg mt-10 mx-2 bg-slate-800 text-slate-100 border border-slate-600 shadow-xl">
         <CardHeader>
           <CardTitle className="gradient-title text-4xl">
             Complete Your Profile
@@ -100,10 +100,10 @@ const OnboardingForm = ({ industries }) => {
                   setValue("subIndustry", "");
                 }}
               >
-                <SelectTrigger id="industry">
+                <SelectTrigger id="industry" className="bg-slate-700 border border-slate-600 text-slate-100 focus-visible:ring-2 focus-visible:ring-blue-500">
                   <SelectValue placeholder="Select an industry" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-slate-800 border border-slate-600 text-slate-100">
                   <SelectGroup>
                     <SelectLabel>Industries</SelectLabel>
                     {industries.map((ind) => (
@@ -127,10 +127,10 @@ const OnboardingForm = ({ industries }) => {
                 <Select
                   onValueChange={(value) => setValue("subIndustry", value)}
                 >
-                  <SelectTrigger id="subIndustry">
+                  <SelectTrigger id="subIndustry" className="bg-slate-700 border border-slate-600 text-slate-100 focus-visible:ring-2 focus-visible:ring-blue-500">
                     <SelectValue placeholder="Select your specialization" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-slate-800 border border-slate-600 text-slate-100">
                     <SelectGroup>
                       <SelectLabel>Specializations</SelectLabel>
                       {selectedIndustry?.subIndustries.map((sub) => (
@@ -157,6 +157,7 @@ const OnboardingForm = ({ industries }) => {
                 min="0"
                 max="50"
                 placeholder="Enter years of experience"
+                className="bg-slate-700 border border-slate-600 text-slate-100 placeholder-slate-400 focus-visible:ring-2 focus-visible:ring-blue-500"
                 {...register("experience")}
               />
               {errors.experience && (
@@ -171,6 +172,7 @@ const OnboardingForm = ({ industries }) => {
               <Input
                 id="skills"
                 placeholder="e.g., Python, JavaScript, Project Management"
+                className="bg-slate-700 border border-slate-600 text-slate-100 placeholder-slate-400 focus-visible:ring-2 focus-visible:ring-blue-500"
                 {...register("skills")}
               />
               <p className="text-sm text-muted-foreground">
@@ -186,7 +188,7 @@ const OnboardingForm = ({ industries }) => {
               <Textarea
                 id="bio"
                 placeholder="Tell us about your professional background..."
-                className="h-32"
+                className="h-32 bg-slate-700 border border-slate-600 text-slate-100 placeholder-slate-400 focus-visible:ring-2 focus-visible:ring-blue-500"
                 {...register("bio")}
               />
               {errors.bio && (

@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "@/lib/prisma";
-import { auth } from "@clerk/nextjs/server";
+import { auth, clerkClient } from "@clerk/nextjs/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { jsonrepair } from "jsonrepair";
 
@@ -9,25 +9,18 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
 export async function generateQuiz(provider = "gemini") {
-  const { userId } = await auth();
-  if (!userId) throw new Error("Unauthorized");
-
+  const ensured = await ensureUser();
   const user = await db.user.findUnique({
-    where: { clerkUserId: userId },
+    where: { id: ensured.id },
     select: {
       industry: true,
       skills: true,
     },
   });
-
   if (!user) throw new Error("User not found");
 
   const prompt = `
-    Generate 10 technical interview questions for a ${
-      user.industry
-    } professional${
-    user.skills?.length ? ` with expertise in ${user.skills.join(", ")}` : ""
-  }.
+    Generate 10 technical interview questions for a ${user.industry} professional${user.skills?.length ? ` with expertise in ${user.skills.join(", ")}` : ""}.
     
     Each question should be multiple choice with 4 options.
     
@@ -160,15 +153,47 @@ export async function generateQuiz(provider = "gemini") {
   }
 }
 
-export async function saveQuizResult(questions, answers, score) {
+// Helper to ensure and reconcile the user record
+async function ensureUser() {
   const { userId } = await auth();
   if (!userId) throw new Error("Unauthorized");
 
-  const user = await db.user.findUnique({
-    where: { clerkUserId: userId },
-  });
+  // 1) Try by clerkUserId
+  let user = await db.user.findUnique({ where: { clerkUserId: userId } });
+  if (user) return user;
 
-  if (!user) throw new Error("User not found");
+  // 2) Try linking by email
+  try {
+    const clerkUser = await clerkClient.users.getUser(userId);
+    const email = clerkUser?.emailAddresses?.[0]?.emailAddress;
+    const name = `${clerkUser?.firstName || ""} ${clerkUser?.lastName || ""}`.trim() || null;
+    const imageUrl = clerkUser?.imageUrl || null;
+
+    if (email) {
+      const existingByEmail = await db.user.findUnique({ where: { email } });
+      if (existingByEmail) {
+        user = await db.user.update({
+          where: { id: existingByEmail.id },
+          data: { clerkUserId: userId, name, imageUrl },
+        });
+        return user;
+      }
+
+      // 3) Create new if not found
+      user = await db.user.create({
+        data: { clerkUserId: userId, email, name, imageUrl },
+      });
+      return user;
+    }
+  } catch (e) {
+    console.error("ensureUser failed to fetch Clerk user:", e);
+  }
+
+  throw new Error("User not found");
+}
+
+export async function saveQuizResult(questions, answers, score) {
+  const user = await ensureUser();
 
   const questionResults = questions.map((q, index) => ({
     question: q.question,
@@ -232,14 +257,7 @@ export async function saveQuizResult(questions, answers, score) {
 }
 
 export async function getAssessments() {
-  const { userId } = await auth();
-  if (!userId) throw new Error("Unauthorized");
-
-  const user = await db.user.findUnique({
-    where: { clerkUserId: userId },
-  });
-
-  if (!user) throw new Error("User not found");
+  const user = await ensureUser();
 
   try {
     const assessments = await db.assessment.findMany({
