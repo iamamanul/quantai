@@ -16,7 +16,7 @@ import Image from "next/image";
 
 const navLinks = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/dashboard#ai-assistant", label: "QuantAI Assistant", icon: Bot },
+  { href: "/ai-assistant", label: "QuantAI Assistant", icon: Bot },
   { href: "/resume", label: "Resume", icon: FileText },
   { href: "/ai-cover-letter", label: "Cover Letter", icon: PenBox },
   { href: "/interview", label: "Interview", icon: GraduationCap },
