@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import { Button } from "./ui/button";
 import {
   PenBox, LayoutDashboard, FileText, GraduationCap,
-  ChevronDown, StarsIcon, Calendar, Menu, X, Sparkles, Bot,
+  ChevronDown, StarsIcon, Calendar, Menu, X, Bot,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -28,6 +28,7 @@ export default function Header() {
   const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [touchStart, setTouchStart] = useState(null);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 20);
@@ -39,6 +40,18 @@ export default function Header() {
   useEffect(() => {
     setMobileOpen(false);
   }, [pathname]);
+
+  // Lock body scroll when mobile drawer is open
+  useEffect(() => {
+    if (mobileOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [mobileOpen]);
 
   // Sync user with database
   useEffect(() => {
@@ -56,6 +69,27 @@ export default function Header() {
     }).catch(() => {});
   }, [user, isLoaded]);
 
+  // Swipe gesture handler to close drawer on swipe right
+  const handleTouchStart = (e) => {
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchMove = (e) => {
+    if (!touchStart) return;
+    const currentTouch = e.targetTouches[0].clientX;
+    const diff = currentTouch - touchStart;
+
+    // Swiping right by > 45px closes the drawer
+    if (diff > 45) {
+      setMobileOpen(false);
+      setTouchStart(null);
+    }
+  };
+
+  const handleTouchEnd = () => {
+    setTouchStart(null);
+  };
+
   const isActive = (href) => pathname === href;
 
   return (
@@ -63,7 +97,7 @@ export default function Header() {
       <header
         className={`fixed top-0 w-full z-50 transition-all duration-500 ${
           scrolled
-            ? "bg-slate-950/90 backdrop-blur-xl border-b border-white/8 shadow-lg shadow-black/20"
+            ? "bg-slate-950/95 backdrop-blur-xl border-b border-white/8 shadow-lg shadow-black/40"
             : "bg-transparent"
         }`}
       >
@@ -171,7 +205,7 @@ export default function Header() {
               <Button
                 variant="ghost"
                 size="sm"
-                className="lg:hidden w-9 h-9 p-0 text-slate-400 hover:text-white hover:bg-white/5"
+                className="lg:hidden w-9 h-9 p-0 text-slate-400 hover:text-white hover:bg-white/5 active:scale-95 touch-manipulation"
                 onClick={() => setMobileOpen(!mobileOpen)}
               >
                 {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
@@ -184,31 +218,41 @@ export default function Header() {
       {/* Mobile Drawer */}
       <SignedIn>
         <div
-          className={`fixed inset-0 z-40 lg:hidden transition-all duration-300 ${
+          className={`fixed inset-0 z-50 lg:hidden transition-all duration-300 ${
             mobileOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
           }`}
         >
-          {/* Backdrop */}
+          {/* Backdrop (Darker 85% opacity with blur) */}
           <div
-            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            className="absolute inset-0 bg-slate-950/85 backdrop-blur-md transition-opacity duration-300"
             onClick={() => setMobileOpen(false)}
           />
-          {/* Drawer */}
+
+          {/* Drawer (Solid dark bg-slate-950 with swipe gesture) */}
           <div
-            className={`absolute top-0 right-0 h-full w-72 bg-slate-950/98 border-l border-white/10 shadow-2xl transition-transform duration-300 ${
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+            className={`absolute top-0 right-0 h-full w-80 max-w-[85vw] bg-slate-950 border-l border-white/10 shadow-2xl shadow-black flex flex-col justify-between transition-transform duration-300 ease-out z-10 ${
               mobileOpen ? "translate-x-0" : "translate-x-full"
             }`}
           >
-            <div className="flex flex-col p-6 pt-24 gap-2">
-              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-4">
-                Navigation
-              </p>
+            <div className="flex flex-col p-6 pt-20 gap-2 overflow-y-auto">
+              <div className="flex items-center justify-between mb-4 border-b border-white/10 pb-4">
+                <p className="text-xs font-bold text-blue-400 uppercase tracking-widest">
+                  Navigation
+                </p>
+                <div className="text-[11px] text-slate-400 flex items-center gap-1">
+                  <span>Swipe right →</span>
+                </div>
+              </div>
+
               {navLinks.map(({ href, label, icon: Icon }) => (
                 <Link key={href} href={href}>
                   <div
-                    className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${
+                    className={`flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-semibold transition-all duration-200 active:scale-95 touch-manipulation ${
                       isActive(href)
-                        ? "bg-blue-500/15 text-blue-400 border border-blue-500/20"
+                        ? "bg-blue-500/20 text-blue-300 border border-blue-500/30"
                         : "text-slate-300 hover:text-white hover:bg-white/5"
                     }`}
                   >
@@ -220,6 +264,10 @@ export default function Header() {
                   </div>
                 </Link>
               ))}
+            </div>
+
+            <div className="p-6 border-t border-white/10 text-xs text-slate-500 text-center">
+              QuantAI Career Suite
             </div>
           </div>
         </div>
