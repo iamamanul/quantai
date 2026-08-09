@@ -29,6 +29,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import CareerRoadmap from "./career-roadmap";
 import UserProfile from "./user-profile";
+import AIInsights from "@/components/AIInsights";
 import { useEffect, useState } from "react";
 
 const DashboardView = ({ insights, user, careerRoadmap }) => {
@@ -413,6 +414,7 @@ const DashboardView = ({ insights, user, careerRoadmap }) => {
   return (
     <div className="space-y-6">
       <UserProfile user={user} />
+      <AIInsights />
       <div className="flex justify-between items-center">
         <Badge variant="outline">Last updated: {lastUpdatedDate}</Badge>
       </div>
