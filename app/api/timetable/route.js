@@ -263,8 +263,8 @@ export async function DELETE(request) {
 
     const { id } = await request.json();
 
-    // Soft delete to preserve audit trail
-    const result = await db.timeTable.updateMany({ where: { id, userId: user.id }, data: { deletedAt: new Date() } });
+    // Delete record for this user
+    const result = await db.timeTable.deleteMany({ where: { id, userId: user.id } });
     if (result.count === 0) {
       return NextResponse.json({ error: 'Task not found' }, { status: 404 });
     }

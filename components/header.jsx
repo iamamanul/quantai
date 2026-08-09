@@ -1,168 +1,228 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { Button } from "./ui/button";
 import {
-  PenBox,
-  LayoutDashboard,
-  FileText,
-  GraduationCap,
-  ChevronDown,
-  StarsIcon,
-  Calendar,
+  PenBox, LayoutDashboard, FileText, GraduationCap,
+  ChevronDown, StarsIcon, Calendar, Menu, X, Sparkles,
 } from "lucide-react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { SignedIn, SignedOut, SignInButton, UserButton, useUser } from "@clerk/nextjs";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 import Image from "next/image";
 
+const navLinks = [
+  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/resume", label: "Resume", icon: FileText },
+  { href: "/ai-cover-letter", label: "Cover Letter", icon: PenBox },
+  { href: "/interview", label: "Interview", icon: GraduationCap },
+  { href: "/timetable", label: "Timetable", icon: Calendar },
+];
+
 export default function Header() {
   const { user, isLoaded } = useUser();
+  const pathname = usePathname();
+  const [scrolled, setScrolled] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
 
-  // Sync user with database when user loads
   useEffect(() => {
-    const syncUser = async () => {
-      if (user) {
-        try {
-          // Call a client-side API to sync user
-          await fetch('/api/user-sync', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              clerkUserId: user.id,
-              name: `${user.firstName} ${user.lastName}`,
-              email: user.emailAddresses[0]?.emailAddress,
-              imageUrl: user.imageUrl,
-            }),
-          });
-        } catch (error) {
-          console.error('User sync failed:', error);
-        }
-      }
-    };
+    const onScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
-    if (isLoaded && user) {
-      syncUser();
-    }
+  // Close mobile menu on route change
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [pathname]);
+
+  // Sync user with database
+  useEffect(() => {
+    if (!isLoaded || !user) return;
+    fetch("/api/user-sync", {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        clerkUserId: user.id,
+        name: `${user.firstName || ""} ${user.lastName || ""}`.trim(),
+        email: user.emailAddresses[0]?.emailAddress,
+        imageUrl: user.imageUrl,
+      }),
+    }).catch(() => {});
   }, [user, isLoaded]);
 
-  // Don't render anything until Clerk is loaded to prevent hydration mismatch
-  if (!isLoaded) {
-    return (
-      <header className="fixed top-0 w-full border-b bg-background/80 backdrop-blur-md z-50 supports-[backdrop-filter]:bg-background/60">
-        <nav className="container mx-auto px-4 h-18 flex items-center justify-between">
-          <Link href="/">
+  const isActive = (href) => pathname === href;
+
+  return (
+    <>
+      <header
+        className={`fixed top-0 w-full z-50 transition-all duration-500 ${
+          scrolled
+            ? "bg-slate-950/90 backdrop-blur-xl border-b border-white/8 shadow-lg shadow-black/20"
+            : "bg-transparent"
+        }`}
+      >
+        <nav className="container mx-auto px-4 h-20 flex items-center justify-between">
+          {/* Logo */}
+          <Link href="/" className="flex-shrink-0 group">
             <Image
-              src={"/logo.png"}
-              alt=" QuantAI Logo"
-              width={200}
-              height={60}
-              className="h-[6rem] w-auto object-contain"
+              src="/logo.png"
+              alt="QuantAI Logo"
+              width={160}
+              height={48}
+              className="h-14 w-auto object-contain transition-all duration-300 group-hover:scale-105 group-hover:drop-shadow-[0_0_12px_rgba(96,165,250,0.6)]"
             />
           </Link>
-          <div className="flex items-center space-x-2 md:space-x-4">
-            {/* Loading state */}
+
+          {/* Desktop nav */}
+          <div className="hidden lg:flex items-center gap-1">
+            <SignedIn>
+              {navLinks.slice(0, 1).map(({ href, label, icon: Icon }) => (
+                <Link key={href} href={href}>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className={`gap-2 text-sm font-medium transition-all duration-200 rounded-lg ${
+                      isActive(href)
+                        ? "bg-blue-500/15 text-blue-400 border border-blue-500/20"
+                        : "text-slate-400 hover:text-white hover:bg-white/5"
+                    }`}
+                  >
+                    <Icon className="h-4 w-4" />
+                    {label}
+                  </Button>
+                </Link>
+              ))}
+
+              {/* Growth Tools Dropdown */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    size="sm"
+                    className="gap-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white border-0 rounded-lg font-medium shadow-glow-sm"
+                  >
+                    <StarsIcon className="h-4 w-4" />
+                    Growth Tools
+                    <ChevronDown className="h-3 w-3" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  align="end"
+                  className="w-52 bg-slate-900/95 backdrop-blur-xl border border-white/10 shadow-2xl rounded-xl p-1"
+                >
+                  {navLinks.slice(1).map(({ href, label, icon: Icon }) => (
+                    <DropdownMenuItem key={href} asChild>
+                      <Link
+                        href={href}
+                        className={`flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors cursor-pointer ${
+                          isActive(href)
+                            ? "bg-blue-500/15 text-blue-400"
+                            : "text-slate-300 hover:text-white hover:bg-white/5"
+                        }`}
+                      >
+                        <Icon className="h-4 w-4" />
+                        {label}
+                        {isActive(href) && (
+                          <span className="ml-auto w-1.5 h-1.5 rounded-full bg-blue-400" />
+                        )}
+                      </Link>
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </SignedIn>
+          </div>
+
+          {/* Right side */}
+          <div className="flex items-center gap-3">
+            <SignedOut>
+              <SignInButton>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="border-white/20 text-white hover:bg-white/10 hover:border-white/40 rounded-lg"
+                >
+                  Sign In
+                </Button>
+              </SignInButton>
+            </SignedOut>
+
+            <SignedIn>
+              <UserButton
+                appearance={{
+                  elements: {
+                    avatarBox: "w-9 h-9 ring-2 ring-blue-500/30 hover:ring-blue-500/60 transition-all",
+                    userButtonPopoverCard: "bg-slate-900 border border-white/10 shadow-2xl",
+                    userPreviewMainIdentifier: "font-semibold text-white",
+                    userPreviewSecondaryIdentifier: "text-slate-400",
+                  },
+                }}
+                fallbackRedirectUrl="/"
+              />
+            </SignedIn>
+
+            {/* Mobile menu toggle */}
+            <SignedIn>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="lg:hidden w-9 h-9 p-0 text-slate-400 hover:text-white hover:bg-white/5"
+                onClick={() => setMobileOpen(!mobileOpen)}
+              >
+                {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+              </Button>
+            </SignedIn>
           </div>
         </nav>
       </header>
-    );
-  }
 
-  return (
-    <header className="fixed top-0 w-full border-b bg-background/80 backdrop-blur-md z-50 supports-[backdrop-filter]:bg-background/60">
-      <nav className="container mx-auto px-4 h-18 flex items-center justify-between">
-        <Link href="/">
-          <Image
-            src={"/logo.png"}
-            alt=" QuantAI Logo"
-            width={200}
-            height={60}
-            className="h-[6rem] w-auto object-contain"
+      {/* Mobile Drawer */}
+      <SignedIn>
+        <div
+          className={`fixed inset-0 z-40 lg:hidden transition-all duration-300 ${
+            mobileOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+          }`}
+        >
+          {/* Backdrop */}
+          <div
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            onClick={() => setMobileOpen(false)}
           />
-        </Link>
-
-        {/* Action Buttons */}
-        <div className="flex items-center space-x-2 md:space-x-4">
-          <SignedIn>
-            <Link href="/dashboard">
-              <Button
-                variant="outline"
-                className="hidden md:inline-flex items-center gap-2"
-              >
-                <LayoutDashboard className="h-4 w-4" />
-                Industry Insights
-              </Button>
-              <Button variant="ghost" className="md:hidden w-10 h-10 p-0">
-                <LayoutDashboard className="h-4 w-4" />
-              </Button>
-            </Link>
-
-            {/* Growth Tools Dropdown */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button className="flex items-center gap-2">
-                  <StarsIcon className="h-4 w-4" />
-                  <span className="hidden md:block">Growth Tools</span>
-                  <ChevronDown className="h-4 w-4" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
-                <DropdownMenuItem asChild>
-                  <Link href="/resume" className="flex items-center gap-2">
-                    <FileText className="h-4 w-4" />
-                    Build Resume
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link
-                    href="/ai-cover-letter"
-                    className="flex items-center gap-2"
+          {/* Drawer */}
+          <div
+            className={`absolute top-0 right-0 h-full w-72 bg-slate-950/98 border-l border-white/10 shadow-2xl transition-transform duration-300 ${
+              mobileOpen ? "translate-x-0" : "translate-x-full"
+            }`}
+          >
+            <div className="flex flex-col p-6 pt-24 gap-2">
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-widest mb-4">
+                Navigation
+              </p>
+              {navLinks.map(({ href, label, icon: Icon }) => (
+                <Link key={href} href={href}>
+                  <div
+                    className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all duration-200 ${
+                      isActive(href)
+                        ? "bg-blue-500/15 text-blue-400 border border-blue-500/20"
+                        : "text-slate-300 hover:text-white hover:bg-white/5"
+                    }`}
                   >
-                    <PenBox className="h-4 w-4" />
-                    Cover Letter
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/interview" className="flex items-center gap-2">
-                    <GraduationCap className="h-4 w-4" />
-                    Interview Prep
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link href="/timetable" className="flex items-center gap-2">
-                    <Calendar className="h-4 w-4" />
-                    Timetable
-                  </Link>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </SignedIn>
-
-          <SignedOut>
-            <SignInButton>
-              <Button variant="outline">Sign In</Button>
-            </SignInButton>
-          </SignedOut>
-
-          <SignedIn>
-            <UserButton
-              appearance={{
-                elements: {
-                  avatarBox: "w-10 h-10",
-                  userButtonPopoverCard: "shadow-xl",
-                  userPreviewMainIdentifier: "font-semibold",
-                },
-              }}
-              fallbackRedirectUrl="/"
-            />
-          </SignedIn>
+                    <Icon className="h-4 w-4" />
+                    {label}
+                    {isActive(href) && (
+                      <span className="ml-auto w-2 h-2 rounded-full bg-blue-400 animate-pulse" />
+                    )}
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
         </div>
-      </nav>
-    </header>
+      </SignedIn>
+    </>
   );
 }

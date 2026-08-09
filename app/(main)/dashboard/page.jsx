@@ -4,7 +4,6 @@ import DashboardView from "./_component/dashboard-view";
 import { useRef, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { ReloadIcon } from "@radix-ui/react-icons";
 
 export const dynamic = "force-dynamic";
 
@@ -12,59 +11,84 @@ const fetcher = (url) => fetch(url).then((res) => res.json());
 
 function ProviderToggle({ provider, setProvider, cacheExists }) {
   return (
-    <div className="flex items-center justify-center gap-3 py-3 w-full">
+    <div className="flex items-center justify-center gap-3 py-4 w-full">
       {/* Gemini Button */}
       <button
-        className={`flex flex-col items-center px-3 py-2 rounded-xl shadow border transition-all duration-200 text-xs
-          ${provider === "gemini"
-            ? "bg-gradient-to-br from-blue-400 to-purple-400 border-blue-500 scale-105 ring-2 ring-blue-300"
-            : "bg-white border-gray-200 hover:bg-blue-50 hover:scale-105"}
-        `}
-        style={{ minWidth: 56 }}
+        className={`flex flex-col items-center px-4 py-2.5 rounded-xl border transition-all duration-300 text-xs font-semibold gap-1 ${
+          provider === "gemini"
+            ? "bg-gradient-to-br from-blue-600/30 to-purple-600/30 border-blue-500/50 scale-105 shadow-glow-sm text-blue-300"
+            : "bg-white/3 border-white/10 hover:bg-white/6 hover:border-white/20 text-muted-foreground hover:text-white"
+        }`}
+        style={{ minWidth: 70 }}
         onClick={() => {
           if (cacheExists && provider !== "gemini") {
-            toast.info("You already have the latest insights. To refresh, please try again tomorrow.");
+            toast.info("Already have latest insights. Try again tomorrow.");
             return;
           }
           setProvider("gemini");
         }}
       >
-        {/* Gemini SVG Icon */}
-        <span className="mb-1">
-          <svg width="28" height="28" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <circle cx="24" cy="24" r="24" fill="#7B61FF"/>
-            <ellipse cx="24" cy="24" rx="14" ry="8" fill="#fff" fillOpacity="0.9"/>
-            <ellipse cx="24" cy="24" rx="8" ry="14" fill="#fff" fillOpacity="0.7"/>
-            <circle cx="24" cy="24" r="6" fill="#7B61FF" fillOpacity="0.8"/>
-          </svg>
-        </span>
-        <span className={`font-semibold tracking-wide ${provider === "gemini" ? "text-blue-900" : "text-gray-500"}`}>Gemini</span>
+        <svg width="24" height="24" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="24" cy="24" r="24" fill="url(#g1)" />
+          <ellipse cx="24" cy="24" rx="14" ry="8" fill="white" fillOpacity="0.9" />
+          <ellipse cx="24" cy="24" rx="8" ry="14" fill="white" fillOpacity="0.7" />
+          <circle cx="24" cy="24" r="6" fill="#7B61FF" fillOpacity="0.8" />
+          <defs>
+            <linearGradient id="g1" x1="0" y1="0" x2="48" y2="48" gradientUnits="userSpaceOnUse">
+              <stop stopColor="#4F8EF7" />
+              <stop offset="1" stopColor="#9B59FF" />
+            </linearGradient>
+          </defs>
+        </svg>
+        Gemini
       </button>
+
+      <div className="w-px h-8 bg-white/10" />
+
       {/* Groq Button */}
       <button
-        className={`flex flex-col items-center px-3 py-2 rounded-xl shadow border transition-all duration-200 text-xs
-          ${provider === "groq"
-            ? "bg-gradient-to-br from-fuchsia-500 to-orange-400 border-fuchsia-600 scale-105 ring-2 ring-fuchsia-300"
-            : "bg-white border-gray-200 hover:bg-fuchsia-50 hover:scale-105"}
-        `}
-        style={{ minWidth: 56 }}
+        className={`flex flex-col items-center px-4 py-2.5 rounded-xl border transition-all duration-300 text-xs font-semibold gap-1 ${
+          provider === "groq"
+            ? "bg-gradient-to-br from-fuchsia-600/30 to-orange-600/30 border-fuchsia-500/50 scale-105 shadow-glow-purple text-fuchsia-300"
+            : "bg-white/3 border-white/10 hover:bg-white/6 hover:border-white/20 text-muted-foreground hover:text-white"
+        }`}
+        style={{ minWidth: 70 }}
         onClick={() => {
           if (cacheExists && provider !== "groq") {
-            toast.info("You already have the latest insights. To refresh, please try again tomorrow.");
+            toast.info("Already have latest insights. Try again tomorrow.");
             return;
           }
           setProvider("groq");
         }}
       >
-        {/* Groq SVG Icon */}
-        <span className="mb-1">
-          <svg width="28" height="28" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect x="4" y="4" width="40" height="40" rx="12" fill="#FF4A4A"/>
-            <path d="M16 32L32 16M16 16L32 32" stroke="#fff" strokeWidth="4" strokeLinecap="round"/>
-          </svg>
-        </span>
-        <span className={`font-semibold tracking-wide ${provider === "groq" ? "text-fuchsia-900" : "text-gray-500"}`}>Groq</span>
+        <svg width="24" height="24" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="4" y="4" width="40" height="40" rx="12" fill="url(#g2)" />
+          <path d="M16 32L32 16M16 16L32 32" stroke="white" strokeWidth="4" strokeLinecap="round" />
+          <defs>
+            <linearGradient id="g2" x1="4" y1="4" x2="44" y2="44" gradientUnits="userSpaceOnUse">
+              <stop stopColor="#F97316" />
+              <stop offset="1" stopColor="#EC4899" />
+            </linearGradient>
+          </defs>
+        </svg>
+        Groq
       </button>
+    </div>
+  );
+}
+
+function DashboardSkeleton() {
+  return (
+    <div className="container mx-auto px-4 py-8 space-y-6 animate-pulse">
+      <div className="skeleton h-24 rounded-2xl w-full" />
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {[...Array(3)].map((_, i) => <div key={i} className="skeleton h-28 rounded-2xl" />)}
+      </div>
+      <div className="skeleton h-64 rounded-2xl w-full" />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="skeleton h-48 rounded-2xl" />
+        <div className="skeleton h-48 rounded-2xl" />
+      </div>
     </div>
   );
 }
@@ -75,7 +99,6 @@ export default function DashboardPage() {
 
   useEffect(() => {
     setIsClient(true);
-    // Load provider from localStorage
     const saved = localStorage.getItem("industry-insights-provider");
     if (saved) setProvider(saved);
   }, []);
@@ -88,7 +111,6 @@ export default function DashboardPage() {
 
   if (!isClient) return null;
 
-  // Use a stable SWR key that includes the provider
   const swrKey = `/api/industry-insights?provider=${provider}`;
 
   return (
@@ -103,71 +125,56 @@ export default function DashboardPage() {
 
 function IndustryInsightsContent({ swrKey }) {
   const router = useRouter();
-  const { data: onboarding, isLoading: onboardingLoading } = useSWR(
-    "/api/user-onboarding-status"
-  );
+  const { data: onboarding, isLoading: onboardingLoading } = useSWR("/api/user-onboarding-status");
   const { data, error, isLoading } = useSWR(
     onboarding && onboarding.isOnboarded ? swrKey : null
   );
   const lastGoodData = useRef(null);
 
-  // Store last good data
   useEffect(() => {
-    if (data && !data.error) {
-      lastGoodData.current = data;
-    }
+    if (data && !data.error) lastGoodData.current = data;
   }, [data]);
 
   useEffect(() => {
-    if (onboarding && !onboarding.isOnboarded) {
-      router.replace("/onboarding");
-    }
+    if (onboarding && !onboarding.isOnboarded) router.replace("/onboarding");
   }, [onboarding, router]);
 
   if (onboardingLoading || (onboarding && onboarding.isOnboarded && isLoading))
-    return <div>Loading...</div>;
+    return <DashboardSkeleton />;
 
-  // If error or no data, but we have lastGoodData, just show the dashboard (no message, no yellow background)
   if ((error || !data) && lastGoodData.current) {
     const { insights, user, careerRoadmap } = lastGoodData.current;
     return (
-      <div className="container mx-auto">
-        <div className="rounded-xl bg-gradient-to-br from-slate-800 to-slate-900 border border-blue-700/50 shadow-xl p-4 md:p-6">
-          <DashboardView
-            insights={insights}
-            user={user}
-            careerRoadmap={careerRoadmap}
-          />
+      <div className="container mx-auto px-4">
+        <DashboardView insights={insights} user={user} careerRoadmap={careerRoadmap} />
+      </div>
+    );
+  }
+
+  if (error) return (
+    <div className="container mx-auto px-4 py-12 text-center">
+      <p className="text-red-400">Error loading insights. Please refresh.</p>
+    </div>
+  );
+  if (!data) return null;
+
+  if (data.error) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex flex-col items-center justify-center rounded-2xl border border-red-500/20 bg-red-500/5 p-12 text-center">
+          <span className="text-5xl mb-4">🚦</span>
+          <h2 className="text-2xl font-bold text-red-400 mb-2">API Limit Reached</h2>
+          <p className="text-slate-400">{data.error}</p>
+          <p className="text-sm text-muted-foreground mt-2">Try again tomorrow or switch to Groq provider above.</p>
         </div>
       </div>
     );
   }
 
-  if (error) return <div>Error loading insights.</div>;
-  if (!data) return null;
-
-  if (data.error) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[300px] bg-gradient-to-r from-red-100 to-pink-100 border-2 border-red-400 rounded-xl shadow-lg p-8 my-8">
-        <span className="text-5xl mb-4">🚦</span>
-        <h2 className="text-2xl font-bold text-red-700 mb-2">Gemini API Limit Reached</h2>
-        <p className="text-lg text-red-600 mb-2">{data.error}</p>
-        <p className="text-base text-muted-foreground">You can try again tomorrow, or upgrade your Gemini API plan for more requests.</p>
-      </div>
-    );
-  }
-
   const { insights, user, careerRoadmap } = data;
-
   return (
-    <div className="container mx-auto">
-      <div className="rounded-xl bg-gradient-to-br from-slate-800 to-slate-900 border border-blue-700/50 shadow-xl p-4 md:p-6">
-        <DashboardView
-          insights={insights}
-          user={user}
-          careerRoadmap={careerRoadmap}
-        />
-      </div>
+    <div className="container mx-auto px-4">
+      <DashboardView insights={insights} user={user} careerRoadmap={careerRoadmap} />
     </div>
   );
 }

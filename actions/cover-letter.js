@@ -14,12 +14,15 @@ function getGeminiModel() {
     const key = (process.env.GEMINI_API_KEY || "").trim();
     if (!key) return null;
     const genAI = new GoogleGenerativeAI(key);
-    return genAI.getGenerativeModel({ model: process.env.GEMINI_MODEL || "gemini-1.5-flash" });
+  return genAI.getGenerativeModel({ model: process.env.GEMINI_MODEL || "gemini-1.5-flash" });
   } catch (error) {
     console.error("[cover-letter] getGeminiModel failed:", error);
     return null;
   }
 }
+
+// Allow overriding Groq model via env; default to a supported model
+const GROQ_MODEL = (process.env.GROQ_MODEL || "llama-3.3-70b-versatile").trim();
 
 async function fetchGroqCoverLetter(prompt) {
   const groqKey = (process.env.GROQ_API_KEY || "").trim();
@@ -34,7 +37,7 @@ async function fetchGroqCoverLetter(prompt) {
       "Authorization": `Bearer ${groqKey}`,
     },
     body: JSON.stringify({
-      model: "llama3-70b-8192",
+      model: GROQ_MODEL,
       messages: [
         { role: "system", content: "You are a helpful assistant." },
         { role: "user", content: prompt },
@@ -46,6 +49,17 @@ async function fetchGroqCoverLetter(prompt) {
   if (!response.ok) {
     const status = response.status;
     const errText = await response.text();
+    const lower = (errText || "").toLowerCase();
+    if (lower.includes("model_decommissioned")) {
+      throw new Error(
+        `Groq API failed (status ${status}): model_decommissioned. The configured Groq model appears to be decommissioned. Please set GROQ_MODEL to a supported model (see https://console.groq.com/docs/deprecations). Current GROQ_MODEL=${GROQ_MODEL}. Raw: ${errText}`
+      );
+    }
+    if (lower.includes("model_not_found") || lower.includes("does not exist") || lower.includes("you do not have access")) {
+      throw new Error(
+        `Groq API failed (status ${status}): model_not_found or access denied. The configured GROQ_MODEL may be incorrect or not enabled for your account. Please set GROQ_MODEL to a model you have access to. Current GROQ_MODEL=${GROQ_MODEL}. Raw: ${errText}`
+      );
+    }
     throw new Error(`Groq API failed (status ${status}): ${errText}`);
   }
   const data = await response.json();

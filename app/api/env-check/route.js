@@ -20,6 +20,8 @@ export async function GET() {
       nodeEnv: process.env.NODE_ENV || null,
       hasGemini: !!g,
       hasGroq: !!r,
+      geminiModel: (process.env.GEMINI_MODEL || null),
+      groqModel: (process.env.GROQ_MODEL || null),
       dbFingerprint: dbHash,
       dbName: dbInfo.name,
       dbVersion: dbInfo.version,

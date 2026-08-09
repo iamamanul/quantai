@@ -22,7 +22,7 @@ import { checkUser } from "@/lib/checkUser";
 const GEMINI_KEY = (process.env.GEMINI_API_KEY || "").trim();
 const GEMINI_MODEL = (process.env.GEMINI_MODEL || "gemini-1.5-flash").trim();
 const GROQ_KEY = (process.env.GROQ_API_KEY || "").trim();
-const GROQ_MODEL = (process.env.GROQ_MODEL || "llama3-70b-8192").trim();
+const GROQ_MODEL = (process.env.GROQ_MODEL || "llama-3.3-70b-versatile").trim();
 const GEMINI_TIMEOUT_MS = Number(process.env.GEMINI_TIMEOUT_MS || 12000);
 const GROQ_TIMEOUT_MS = Number(process.env.GROQ_TIMEOUT_MS || 12000);
 
@@ -239,6 +239,17 @@ async function generateWithAI(prompt) {
       clearTimeout(timeout);
       if (!groqResponse.ok) {
         const errText = await groqResponse.text();
+        const lower = (errText || "").toLowerCase();
+        if (lower.includes("model_decommissioned")) {
+          throw new Error(
+            "Groq API failed: model_decommissioned. The configured Groq model appears to be decommissioned. Please set GROQ_MODEL to a supported model (see https://console.groq.com/docs/deprecations). Current GROQ_MODEL=" + GROQ_MODEL + ". Raw: " + errText
+          );
+        }
+        if (lower.includes("model_not_found") || lower.includes("does not exist") || lower.includes("you do not have access")) {
+          throw new Error(
+            "Groq API failed: model_not_found or access denied. The configured GROQ_MODEL may be incorrect or not enabled for your account. Please set GROQ_MODEL to a model you have access to. Current GROQ_MODEL=" + GROQ_MODEL + ". Raw: " + errText
+          );
+        }
         throw new Error("Groq API failed: " + errText);
       }
       const data = await groqResponse.json();

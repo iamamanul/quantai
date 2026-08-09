@@ -5,8 +5,33 @@ import { auth, clerkClient } from "@clerk/nextjs/server";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { jsonrepair } from "jsonrepair";
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+const GEMINI_TIMEOUT_MS = Number(process.env.GEMINI_TIMEOUT_MS || 12000);
+const GROQ_TIMEOUT_MS = Number(process.env.GROQ_TIMEOUT_MS || 12000);
+const GROQ_MAX_RETRIES = Number(process.env.GROQ_MAX_RETRIES || 2);
+
+function sleep(ms) { return new Promise((res) => setTimeout(res, ms)); }
+function withTimeout(promise, ms, label = "operation") {
+  return new Promise((resolve, reject) => {
+    const id = setTimeout(() => reject(new Error(`${label} timed out after ${ms}ms`)), ms);
+    promise.then((v) => { clearTimeout(id); resolve(v); }).catch((e) => { clearTimeout(id); reject(e); });
+  });
+}
+
+// Read Gemini model from env and initialize lazily to avoid crashes when key/model missing
+const GEMINI_MODEL = (process.env.GEMINI_MODEL || "gemini-1.5-flash").trim();
+function getGeminiModel() {
+  try {
+    const key = (process.env.GEMINI_API_KEY || "").trim();
+    if (!key) return null;
+    const genAI = new GoogleGenerativeAI(key);
+    return genAI.getGenerativeModel({ model: GEMINI_MODEL });
+  } catch (e) {
+    console.error("Failed to init Gemini model:", e);
+    return null;
+  }
+}
+// Allow overriding Groq model via env; default to a supported model
+const GROQ_MODEL = (process.env.GROQ_MODEL || "llama-3.3-70b-versatile").trim();
 
 export async function generateQuiz(provider = "gemini") {
   const ensured = await ensureUser();
@@ -43,35 +68,65 @@ export async function generateQuiz(provider = "gemini") {
       throw new Error("GROQ_API_KEY is not set in the environment.");
     }
     const groqPrompt = prompt;
-    let response;
-    try {
-      console.log("Calling Groq API for quiz generation...");
-      response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${process.env.GROQ_API_KEY}`,
-        },
-        body: JSON.stringify({
-          model: "llama3-70b-8192",
-          messages: [
-            { role: "system", content: "You are a helpful assistant." },
-            { role: "user", content: groqPrompt },
-          ],
-          max_tokens: 1024,
-          temperature: 0.7,
-        }),
-      });
-    } catch (networkErr) {
-      console.error("Network error calling Groq API:", networkErr);
-      throw new Error("Network error calling Groq API: " + networkErr.message);
+    // Retry loop for transient errors/timeouts (but not for model_not_found/decommissioned)
+    let attempt = 0;
+    let data = null;
+    while (true) {
+      attempt++;
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), GROQ_TIMEOUT_MS);
+      try {
+        console.log("Calling Groq API for quiz generation... attempt", attempt);
+        const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${process.env.GROQ_API_KEY}`,
+          },
+          body: JSON.stringify({
+            model: GROQ_MODEL,
+            messages: [
+              { role: "system", content: "You are a helpful assistant." },
+              { role: "user", content: groqPrompt },
+            ],
+            max_tokens: 1024,
+            temperature: 0.7,
+          }),
+          signal: controller.signal,
+        });
+        clearTimeout(timeout);
+        if (!response.ok) {
+          const errText = await response.text();
+          const lower = (errText || "").toLowerCase();
+          if (lower.includes("model_decommissioned")) {
+            throw new Error("Groq API failed: model_decommissioned. Current GROQ_MODEL=" + GROQ_MODEL + ". Raw: " + errText);
+          }
+          if (lower.includes("model_not_found") || lower.includes("does not exist") || lower.includes("you do not have access")) {
+            throw new Error("Groq API failed: model_not_found or access denied. Current GROQ_MODEL=" + GROQ_MODEL + ". Raw: " + errText);
+          }
+          if (response.status === 429) {
+            throw new Error("Groq API rate limited (429). Raw: " + errText);
+          }
+          if (response.status >= 500 && attempt <= GROQ_MAX_RETRIES) {
+            const backoff = 200 * Math.pow(2, attempt - 1);
+            await sleep(backoff);
+            continue;
+          }
+          throw new Error("Groq API failed: " + errText);
+        }
+        data = await response.json();
+        break;
+      } catch (err) {
+        clearTimeout(timeout);
+        const msg = String(err?.message || err || "");
+        if ((msg.toLowerCase().includes('abort') || msg.toLowerCase().includes('timed out') || msg.toLowerCase().includes('network')) && attempt <= GROQ_MAX_RETRIES) {
+          const backoff = 200 * Math.pow(2, attempt - 1);
+          await sleep(backoff);
+          continue;
+        }
+        throw err;
+      }
     }
-    if (!response.ok) {
-      const errText = await response.text();
-      console.error("Groq API failed:", errText);
-      throw new Error("Groq API failed: " + errText);
-    }
-    const data = await response.json();
     let text = data.choices?.[0]?.message?.content || "";
     text = text.replace(/```(?:json)?\n?/g, "").trim();
     // Pre-repair: fix lines that start with = or are missing a key
@@ -113,17 +168,41 @@ export async function generateQuiz(provider = "gemini") {
     }
     // Try Gemini
     console.log("Provider requested: Gemini");
-    const result = await model.generateContent(prompt);
-    const response = result.response;
-    const text = response.text();
-    const cleanedText = text.replace(/```(?:json)?\n?/g, "").trim();
-    let quiz;
+    const gemModel = getGeminiModel();
+    if (!gemModel) {
+      console.warn('Gemini model not configured; falling back to Groq');
+      const groqQuiz = await fetchGroqQuiz();
+      return groqQuiz;
+    }
     try {
-      quiz = JSON.parse(cleanedText);
-      console.log("Gemini parsed quiz:", quiz);
-    } catch (parseErr) {
-      console.error("Failed to parse Gemini API response:", cleanedText, parseErr);
-      throw new Error("Failed to parse Gemini API response: " + parseErr.message + "\nRaw response: " + cleanedText);
+      const genPromise = gemModel.generateContent(prompt);
+      const result = await withTimeout(genPromise, GEMINI_TIMEOUT_MS, 'Gemini generateContent');
+      const response = result.response;
+      const text = await response.text();
+      const cleanedText = text.replace(/```(?:json)?\n?/g, "").trim();
+      let quiz;
+      try {
+        quiz = JSON.parse(cleanedText);
+        console.log("Gemini parsed quiz:", quiz);
+      } catch (parseErr) {
+        console.warn("Gemini response not valid JSON; will attempt Groq fallback", parseErr?.message || parseErr);
+        // fallback to Groq below
+        throw parseErr;
+      }
+      if (Array.isArray(quiz)) return quiz;
+      if (quiz && Array.isArray(quiz.questions)) return quiz.questions;
+      throw new Error('Gemini response did not contain questions array');
+    } catch (err) {
+      console.error("Gemini failed or error occurred:", err);
+      // fallback to Groq
+      try {
+        const groqQuiz = await fetchGroqQuiz();
+        console.log("Fallback to Groq succeeded. Returning Groq quiz to frontend.");
+        return groqQuiz;
+      } catch (groqErr) {
+        console.error("Groq fallback also failed:", groqErr);
+        throw new Error("Both Gemini and Groq API limits reached or failed. Please try again later.");
+      }
     }
     if (Array.isArray(quiz)) {
       return quiz;
@@ -164,7 +243,8 @@ async function ensureUser() {
 
   // 2) Try linking by email
   try {
-    const clerkUser = await clerkClient.users.getUser(userId);
+    const client = typeof clerkClient === "function" ? await clerkClient() : clerkClient;
+    const clerkUser = await client.users.getUser(userId);
     const email = clerkUser?.emailAddresses?.[0]?.emailAddress;
     const name = `${clerkUser?.firstName || ""} ${clerkUser?.lastName || ""}`.trim() || null;
     const imageUrl = clerkUser?.imageUrl || null;
@@ -228,10 +308,14 @@ export async function saveQuizResult(questions, answers, score) {
     `;
 
     try {
-      const tipResult = await model.generateContent(improvementPrompt);
-
-      improvementTip = tipResult.response.text().trim();
-      console.log(improvementTip);
+      const gemModel = getGeminiModel();
+      if (gemModel) {
+        const genPromise = gemModel.generateContent(improvementPrompt);
+        const tipResult = await withTimeout(genPromise, GEMINI_TIMEOUT_MS, 'Gemini generateContent');
+        const tipText = await tipResult.response.text();
+        improvementTip = tipText.trim();
+        console.log('Improvement tip generated by Gemini:', improvementTip);
+      }
     } catch (error) {
       console.error("Error generating improvement tip:", error);
       // Continue without improvement tip if generation fails

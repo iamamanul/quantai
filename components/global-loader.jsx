@@ -8,16 +8,23 @@ export default function GlobalLoader() {
 
   useEffect(() => {
     setLoading(true);
-    // Show loader for at least 400ms on every route change
-    const timer = setTimeout(() => setLoading(false), 400);
+    const timer = setTimeout(() => setLoading(false), 500);
     return () => clearTimeout(timer);
   }, [pathname]);
 
   if (!loading) return null;
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/30">
-      <div className="w-14 h-14 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+    <div className="fixed top-0 left-0 right-0 z-[9999] h-0.5">
+      <div
+        className="h-full animate-shimmer rounded-full"
+        style={{
+          background: "linear-gradient(90deg, transparent 0%, #60a5fa 30%, #a78bfa 60%, #67e8f9 80%, transparent 100%)",
+          backgroundSize: "200% 100%",
+          animation: "shimmer 1.5s ease-in-out infinite",
+          boxShadow: "0 0 10px #60a5fa, 0 0 20px #a78bfa40",
+        }}
+      />
     </div>
   );
-} 
+}

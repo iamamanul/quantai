@@ -3,8 +3,7 @@
 import React, { useState } from "react";
 import MDEditor from "@uiw/react-md-editor";
 import { Button } from "@/components/ui/button";
-import { Download, Edit, Eye, FileText } from "lucide-react";
-// Dynamic import for html2pdf to avoid SSR issues
+import { Download, Edit, Eye, FileText, Copy, Check, Save } from "lucide-react";
 import { toast } from "sonner";
 import { updateCoverLetter } from "@/actions/cover-letter";
 
@@ -13,17 +12,15 @@ const CoverLetterPreview = ({ content, coverLetterId }) => {
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
   const [editContent, setEditContent] = useState(content);
   const [isSaving, setIsSaving] = useState(false);
+  const [isCopied, setIsCopied] = useState(false);
 
   const generatePDF = async () => {
     setIsGeneratingPDF(true);
     try {
-      // Check if we're in the browser
       if (typeof window === 'undefined') {
         toast.error("PDF generation is not available during server rendering");
         return;
       }
-
-      // Dynamic import to avoid SSR issues
       const html2pdf = (await import("html2pdf.js/dist/html2pdf.min.js")).default;
       
       const element = document.getElementById("cover-letter-pdf");
@@ -63,160 +60,149 @@ const CoverLetterPreview = ({ content, coverLetterId }) => {
     }
   };
 
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(editContent);
+      setIsCopied(true);
+      toast.success("Copied to clipboard!");
+      setTimeout(() => setIsCopied(false), 2000);
+    } catch (err) {
+      toast.error("Failed to copy text");
+    }
+  };
+
   return (
-    <div className="space-y-4">
+    <div className="space-y-6 animate-fade-in">
       {/* Header with Controls */}
-      <div className="flex flex-col gap-4">
-        <div>
-          <h2 className="text-2xl font-semibold">Cover Letter Preview</h2>
-          <p className="text-muted-foreground">
-            Review and download your generated cover letter
-          </p>
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 glass-card p-6 rounded-2xl border border-white/10 bg-white/5">
+        <div className="space-y-1">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-xl border border-blue-500/20 flex items-center justify-center">
+              <FileText className="h-5 w-5 text-blue-400" />
+            </div>
+            <h2 className="text-2xl font-bold text-white tracking-tight">Cover Letter</h2>
+          </div>
+          <p className="text-sm text-slate-400 ml-13">Review, edit, and export your generated letter</p>
         </div>
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full">
+        
+        <div className="flex flex-wrap items-center gap-3">
           <Button
             variant="outline"
-            size="sm"
             onClick={() => setPreviewMode(previewMode === "preview" ? "edit" : "preview")}
-            className="flex-1 sm:flex-none justify-center"
+            className="border-white/10 bg-white/5 hover:bg-white/10 text-slate-200 h-10 rounded-xl transition-all"
           >
             {previewMode === "preview" ? (
-              <>
-                <Edit className="h-4 w-4 mr-2" />
-                Edit
-              </>
+              <><Edit className="h-4 w-4 mr-2" /> Edit Letter</>
             ) : (
-              <>
-                <Eye className="h-4 w-4 mr-2" />
-                Preview
-              </>
+              <><Eye className="h-4 w-4 mr-2" /> Preview</>
             )}
           </Button>
-         {previewMode === "edit" && (
-           <Button
-             size="sm"
-             onClick={handleSave}
-             disabled={isSaving}
-             className="flex-1 sm:flex-none justify-center bg-gradient-to-r from-green-600 to-blue-600 hover:from-green-700 hover:to-blue-700"
-           >
-             {isSaving ? (
-               <>
-                 <FileText className="h-4 w-4 mr-2 animate-spin" />
-                 Saving...
-               </>
-             ) : (
-               <>
-                 <FileText className="h-4 w-4 mr-2" />
-                 Save
-               </>
-             )}
-           </Button>
-         )}
+
+          {previewMode === "preview" && (
+            <Button
+              variant="outline"
+              onClick={handleCopy}
+              className="border-white/10 bg-white/5 hover:bg-white/10 text-slate-200 h-10 rounded-xl transition-all"
+            >
+              {isCopied ? <Check className="h-4 w-4 mr-2 text-green-400" /> : <Copy className="h-4 w-4 mr-2" />}
+              {isCopied ? "Copied" : "Copy Text"}
+            </Button>
+          )}
+
+          {previewMode === "edit" && (
+            <Button
+              onClick={handleSave}
+              disabled={isSaving}
+              className="h-10 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white border-0 transition-all shadow-lg shadow-emerald-500/20"
+            >
+              {isSaving ? <FileText className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
+              Save Changes
+            </Button>
+          )}
+
           <Button
-            size="sm"
             onClick={generatePDF}
             disabled={isGeneratingPDF}
-            className="flex-1 sm:flex-none justify-center bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+            className="h-10 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white border-0 transition-all shadow-lg shadow-blue-500/20"
           >
             {isGeneratingPDF ? (
-              <>
-                <FileText className="h-4 w-4 mr-2 animate-spin" />
-                Generating...
-              </>
+              <><FileText className="h-4 w-4 mr-2 animate-spin" /> Generating...</>
             ) : (
-              <>
-                <Download className="h-4 w-4 mr-2" />
-                Download PDF
-              </>
+              <><Download className="h-4 w-4 mr-2" /> Download PDF</>
             )}
           </Button>
         </div>
       </div>
 
-      {/* Cover Letter Content */}
-      <div className="border rounded-lg overflow-hidden">
-        {previewMode === "edit" ? (
-          <MDEditor
-            value={editContent}
-            onChange={setEditContent}
-            preview="edit"
-            height={700}
-            className="cover-letter-editor"
-          />
-        ) : (
-          <MDEditor
-            value={editContent}
-            preview="preview"
-            height={700}
-            className="cover-letter-editor"
-          />
-        )}
+      {/* Editor/Preview Area */}
+      <div className="rounded-2xl border border-white/10 bg-[#0d1117] overflow-hidden shadow-2xl ring-1 ring-white/5" data-color-mode="dark">
+        <div className="bg-white/5 px-4 py-3 border-b border-white/10 flex items-center justify-between">
+          <div className="flex gap-2">
+            <div className="w-3 h-3 rounded-full bg-red-500/80 shadow-sm shadow-red-500/20" />
+            <div className="w-3 h-3 rounded-full bg-yellow-500/80 shadow-sm shadow-yellow-500/20" />
+            <div className="w-3 h-3 rounded-full bg-green-500/80 shadow-sm shadow-green-500/20" />
+          </div>
+          <span className="text-xs font-semibold text-slate-400 uppercase tracking-widest">{previewMode === "edit" ? "Markdown Editor" : "Document Preview"}</span>
+        </div>
+        <div className="p-1 min-h-[600px] cover-letter-wrapper">
+          {previewMode === "edit" ? (
+            <MDEditor
+              value={editContent}
+              onChange={setEditContent}
+              preview="edit"
+              height={700}
+              className="border-0 bg-transparent !shadow-none font-sans"
+              textareaProps={{
+                placeholder: "Write your cover letter here...",
+              }}
+            />
+          ) : (
+            <div className="p-8 md:p-12 max-w-4xl mx-auto rounded-xl">
+              <div className="prose prose-invert prose-slate max-w-none 
+                prose-p:leading-relaxed prose-p:text-slate-300 prose-headings:text-white 
+                prose-a:text-blue-400 hover:prose-a:text-blue-300 prose-strong:text-white 
+                prose-ul:text-slate-300 prose-ol:text-slate-300">
+                <MDEditor.Markdown source={editContent} className="bg-transparent text-slate-200" style={{ background: 'transparent' }} />
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Hidden PDF Element */}
       <div className="hidden">
-        <div id="cover-letter-pdf" className="p-8 bg-white">
-          <style jsx>{`
-            .cover-letter-pdf {
-              font-family: 'Times New Roman', serif;
-              font-size: 12px;
+        <div id="cover-letter-pdf" className="p-10 bg-white text-black font-serif">
+          <style dangerouslySetInnerHTML={{__html: `
+            #cover-letter-pdf {
+              font-family: 'Times New Roman', Times, serif;
+              font-size: 11pt;
               line-height: 1.6;
               color: #000;
-              background: white;
-              padding: 20px;
               max-width: 800px;
               margin: 0 auto;
             }
-            .cover-letter-pdf h1 {
-              font-size: 18px;
-              font-weight: bold;
-              margin: 0 0 20px 0;
-              color: #2c3e50;
-              text-align: center;
+            #cover-letter-pdf h1, #cover-letter-pdf h2, #cover-letter-pdf h3 {
+              color: #111;
+              font-weight: 600;
+              margin-bottom: 1rem;
             }
-            .cover-letter-pdf h2 {
-              font-size: 14px;
-              font-weight: bold;
-              margin: 15px 0 10px 0;
-              color: #34495e;
-            }
-            .cover-letter-pdf p {
-              margin: 10px 0;
+            #cover-letter-pdf p {
+              margin-bottom: 1rem;
               text-align: justify;
             }
-            .cover-letter-pdf .header {
-              margin-bottom: 30px;
+            #cover-letter-pdf ul, #cover-letter-pdf ol {
+              margin-bottom: 1rem;
+              padding-left: 2rem;
             }
-            .cover-letter-pdf .date {
-              margin-bottom: 20px;
-            }
-            .cover-letter-pdf .greeting {
-              margin-bottom: 15px;
-            }
-            .cover-letter-pdf .body {
-              margin-bottom: 20px;
-            }
-            .cover-letter-pdf .closing {
-              margin-top: 30px;
-            }
-            .cover-letter-pdf .signature {
-              margin-top: 40px;
-            }
-            @media print {
-              .cover-letter-pdf {
-                padding: 15px;
-                font-size: 11px;
-              }
-            }
-          `}</style>
+          `}} />
           <MDEditor.Markdown
-            source={content}
+            source={editContent}
             style={{
               background: "white",
               color: "black",
-              fontFamily: "Times New Roman, serif",
-              fontSize: "12px",
-              lineHeight: "1.6",
+              fontFamily: "inherit",
+              fontSize: "inherit",
+              lineHeight: "inherit",
             }}
           />
         </div>
