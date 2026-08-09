@@ -13,6 +13,9 @@ import {
 
 /**
  * Server Action: Fetch Smart Insights using multi-provider fallback pipeline
+ * Priority 1: Google Gemini API (User Free Tier Preference)
+ * Priority 2: Groq API
+ * Priority 3: Zero-Crash Smart Rule-Based Engine
  */
 export async function getSmartAIInsights() {
   try {
@@ -54,7 +57,28 @@ Return ONLY a valid JSON array containing 3 to 4 actionable insight objects with
 ]
 IMPORTANT: Return ONLY the raw JSON array. No markdown formatting, no code fences, no extra text.`;
 
-    // Tier 1: Try Groq API
+    // Tier 1 (Primary): Try Google Gemini API (Free tier subscription preference)
+    try {
+      const geminiRaw = await callGeminiAPI(
+        "You are an executive AI assistant. Output strictly clean JSON.",
+        systemPrompt
+      );
+
+      const parsedGemini = cleanAndParseJson(geminiRaw);
+      const insightsArray = Array.isArray(parsedGemini) ? parsedGemini : parsedGemini?.insights || null;
+
+      if (insightsArray && insightsArray.length > 0) {
+        return {
+          success: true,
+          providerUsed: "gemini",
+          insights: insightsArray,
+        };
+      }
+    } catch (geminiErr) {
+      console.warn("Gemini Insights primary fallback triggered:", geminiErr.message);
+    }
+
+    // Tier 2 (Secondary Fallback): Try Groq API
     try {
       const groqRaw = await callGroqAPI([
         { role: "system", content: "You are an executive AI assistant. Output strictly clean JSON." },
@@ -75,27 +99,6 @@ IMPORTANT: Return ONLY the raw JSON array. No markdown formatting, no code fence
       console.warn("Groq Insights fallback triggered:", groqErr.message);
     }
 
-    // Tier 2: Try Gemini API
-    try {
-      const geminiRaw = await callGeminiAPI(
-        "You are an executive AI assistant. Output strictly clean JSON.",
-        systemPrompt
-      );
-
-      const parsedGemini = cleanAndParseJson(geminiRaw);
-      const insightsArray = Array.isArray(parsedGemini) ? parsedGemini : parsedGemini?.insights || null;
-
-      if (insightsArray && insightsArray.length > 0) {
-        return {
-          success: true,
-          providerUsed: "gemini",
-          insights: insightsArray,
-        };
-      }
-    } catch (geminiErr) {
-      console.warn("Gemini Insights fallback triggered:", geminiErr.message);
-    }
-
     // Tier 3: Zero-Crash Rule-Based Engine
     const ruleInsights = generateRuleBasedInsights(userContext);
     return {
@@ -114,6 +117,9 @@ IMPORTANT: Return ONLY the raw JSON array. No markdown formatting, no code fence
 
 /**
  * Server Action: Send AI Chat Message with context injection and fallback pipeline
+ * Priority 1: Google Gemini API (User Free Tier Preference)
+ * Priority 2: Groq API
+ * Priority 3: Zero-Crash Smart Rule-Based Engine
  */
 export async function sendAIChatMessage(userQuery, messageHistory = []) {
   try {
@@ -156,21 +162,7 @@ Use markdown formatting (bolding, lists) to make answers executive-grade, concis
       { role: "user", content: userQuery },
     ];
 
-    // Tier 1: Try Groq API
-    try {
-      const groqAnswer = await callGroqAPI(formattedMessages, false);
-      if (groqAnswer && groqAnswer.trim().length > 0) {
-        return {
-          success: true,
-          providerUsed: "groq",
-          answer: groqAnswer.trim(),
-        };
-      }
-    } catch (groqErr) {
-      console.warn("Groq Chat fallback triggered:", groqErr.message);
-    }
-
-    // Tier 2: Try Gemini API
+    // Tier 1 (Primary): Try Google Gemini API (Free tier subscription preference)
     try {
       const geminiPrompt = `${userQuery}\n\nRecent History:\n${messageHistory
         .slice(-4)
@@ -186,7 +178,21 @@ Use markdown formatting (bolding, lists) to make answers executive-grade, concis
         };
       }
     } catch (geminiErr) {
-      console.warn("Gemini Chat fallback triggered:", geminiErr.message);
+      console.warn("Gemini Chat primary fallback triggered:", geminiErr.message);
+    }
+
+    // Tier 2 (Secondary Fallback): Try Groq API
+    try {
+      const groqAnswer = await callGroqAPI(formattedMessages, false);
+      if (groqAnswer && groqAnswer.trim().length > 0) {
+        return {
+          success: true,
+          providerUsed: "groq",
+          answer: groqAnswer.trim(),
+        };
+      }
+    } catch (groqErr) {
+      console.warn("Groq Chat fallback triggered:", groqErr.message);
     }
 
     // Tier 3: Zero-Crash Rule-Based Engine

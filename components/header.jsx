@@ -1,21 +1,22 @@
 "use client";
 
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "./ui/button";
 import {
   PenBox, LayoutDashboard, FileText, GraduationCap,
-  ChevronDown, StarsIcon, Calendar, Menu, X, Sparkles,
+  ChevronDown, StarsIcon, Calendar, Menu, X, Sparkles, Bot,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { SignedIn, SignedOut, SignInButton, UserButton, useUser } from "@clerk/nextjs";
 import {
-  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator,
+  DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import Image from "next/image";
 
 const navLinks = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { href: "/dashboard#ai-assistant", label: "QuantAI Assistant", icon: Bot },
   { href: "/resume", label: "Resume", icon: FileText },
   { href: "/ai-cover-letter", label: "Cover Letter", icon: PenBox },
   { href: "/interview", label: "Interview", icon: GraduationCap },
@@ -112,7 +113,7 @@ export default function Header() {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent
                   align="end"
-                  className="w-52 bg-slate-900/95 backdrop-blur-xl border border-white/10 shadow-2xl rounded-xl p-1"
+                  className="w-56 bg-slate-900/95 backdrop-blur-xl border border-white/10 shadow-2xl rounded-xl p-1"
                 >
                   {navLinks.slice(1).map(({ href, label, icon: Icon }) => (
                     <DropdownMenuItem key={href} asChild>
@@ -124,7 +125,7 @@ export default function Header() {
                             : "text-slate-300 hover:text-white hover:bg-white/5"
                         }`}
                       >
-                        <Icon className="h-4 w-4" />
+                        <Icon className="h-4 w-4 text-blue-400" />
                         {label}
                         {isActive(href) && (
                           <span className="ml-auto w-1.5 h-1.5 rounded-full bg-blue-400" />
@@ -211,7 +212,7 @@ export default function Header() {
                         : "text-slate-300 hover:text-white hover:bg-white/5"
                     }`}
                   >
-                    <Icon className="h-4 w-4" />
+                    <Icon className="h-4 w-4 text-blue-400" />
                     {label}
                     {isActive(href) && (
                       <span className="ml-auto w-2 h-2 rounded-full bg-blue-400 animate-pulse" />

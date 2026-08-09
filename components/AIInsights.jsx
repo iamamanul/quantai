@@ -149,7 +149,10 @@ export default function AIInsights() {
   };
 
   return (
-    <div className="w-full rounded-3xl border border-white/10 bg-slate-950/90 backdrop-blur-xl p-4 sm:p-6 shadow-2xl space-y-6">
+    <div
+      id="ai-assistant"
+      className="w-full rounded-3xl border border-white/10 bg-slate-950/90 backdrop-blur-xl p-4 sm:p-6 shadow-2xl space-y-6 scroll-mt-24"
+    >
       {/* Header with Title and Mobile Segmented Control */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/10 pb-5">
         <div className="flex items-center gap-3">
@@ -203,203 +206,214 @@ export default function AIInsights() {
         </div>
       </div>
 
-      {/* TAB 1: SMART INSIGHTS */}
-      {activeTab === "insights" && (
-        <div className="space-y-4 animate-fade-in">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
-              <TrendingUp className="w-3.5 h-3.5 text-blue-400" />
-              Real-Time Performance Diagnostics
-            </span>
-            <button
-              onClick={fetchInsights}
-              disabled={loadingInsights}
-              className="text-xs text-blue-400 hover:text-blue-300 flex items-center gap-1 transition-all disabled:opacity-50"
-            >
-              <RefreshCw className={`w-3.5 h-3.5 ${loadingInsights ? "animate-spin" : ""}`} />
-              Refresh
-            </button>
-          </div>
-
-          {loadingInsights ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="h-36 rounded-2xl bg-white/5 animate-pulse" />
-              ))}
-            </div>
-          ) : insights.length === 0 ? (
-            <div className="p-8 text-center rounded-2xl border border-white/10 bg-slate-900/50">
-              <p className="text-slate-400 text-sm">No insights available right now.</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {insights.map((card) => (
-                <div
-                  key={card.id}
-                  className={`rounded-2xl border p-5 transition-all duration-300 shadow-lg relative flex flex-col justify-between ${getInsightCardStyle(
-                    card.type
-                  )}`}
+      {/* Main Tab Area with Fixed Consistent Height */}
+      <div className="min-h-[490px] flex flex-col justify-between space-y-4">
+        {/* TAB 1: SMART INSIGHTS */}
+        {activeTab === "insights" && (
+          <div className="space-y-4 animate-fade-in flex-1 flex flex-col justify-between">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+                  <TrendingUp className="w-3.5 h-3.5 text-blue-400" />
+                  Real-Time Performance Diagnostics
+                </span>
+                <button
+                  onClick={fetchInsights}
+                  disabled={loadingInsights}
+                  className="text-xs text-blue-400 hover:text-blue-300 flex items-center gap-1 transition-all disabled:opacity-50"
                 >
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-2">
-                        <div className="p-2 rounded-xl bg-slate-950/80 border border-white/10">
-                          {getInsightIcon(card.type)}
+                  <RefreshCw className={`w-3.5 h-3.5 ${loadingInsights ? "animate-spin" : ""}`} />
+                  Refresh
+                </button>
+              </div>
+
+              {loadingInsights ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {[1, 2, 3, 4].map((i) => (
+                    <div key={i} className="h-40 rounded-2xl bg-white/5 animate-pulse" />
+                  ))}
+                </div>
+              ) : insights.length === 0 ? (
+                <div className="p-8 text-center rounded-2xl border border-white/10 bg-slate-900/50">
+                  <p className="text-slate-400 text-sm">No insights available right now.</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {insights.map((card) => (
+                    <div
+                      key={card.id}
+                      className={`rounded-2xl border p-5 transition-all duration-300 shadow-lg relative flex flex-col justify-between min-h-[190px] ${getInsightCardStyle(
+                        card.type
+                      )}`}
+                    >
+                      <div className="space-y-3">
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-2">
+                            <div className="p-2 rounded-xl bg-slate-950/80 border border-white/10">
+                              {getInsightIcon(card.type)}
+                            </div>
+                            <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-white/10 text-slate-200 border border-white/10">
+                              {card.category || "Insight"}
+                            </span>
+                          </div>
+                          {card.confidenceScore && (
+                            <span className="text-[11px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full">
+                              {card.confidenceScore}% Confidence
+                            </span>
+                          )}
                         </div>
-                        <span className="text-xs font-semibold px-2.5 py-0.5 rounded-full bg-white/10 text-slate-200 border border-white/10">
-                          {card.category || "Insight"}
-                        </span>
+                        <div>
+                          <h3 className="text-base font-bold text-white font-outfit mb-1">
+                            {card.title}
+                          </h3>
+                          <p className="text-xs text-slate-300 leading-relaxed">
+                            {card.description}
+                          </p>
+                        </div>
                       </div>
-                      {card.confidenceScore && (
-                        <span className="text-[11px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full">
-                          {card.confidenceScore}% Confidence
-                        </span>
+
+                      {card.actionableItem && (
+                        <div className="mt-4 pt-3 border-t border-white/10 flex items-center justify-between">
+                          <span className="text-[11px] font-medium text-slate-400 truncate max-w-[220px]">
+                            💡 {card.actionableItem}
+                          </span>
+                          <button
+                            onClick={() => {
+                              setActiveTab("chat");
+                              handleSendMessage(`Tell me more about: ${card.title} (${card.actionableItem})`);
+                            }}
+                            className="text-xs font-semibold text-blue-400 hover:text-blue-300 flex items-center gap-1 transition-all flex-shrink-0"
+                          >
+                            Ask AI <ArrowRight className="w-3 h-3" />
+                          </button>
+                        </div>
                       )}
                     </div>
-                    <div>
-                      <h3 className="text-base font-bold text-white font-outfit mb-1">
-                        {card.title}
-                      </h3>
-                      <p className="text-xs text-slate-300 leading-relaxed">
-                        {card.description}
-                      </p>
-                    </div>
-                  </div>
-
-                  {card.actionableItem && (
-                    <div className="mt-4 pt-3 border-t border-white/10 flex items-center justify-between">
-                      <span className="text-[11px] font-medium text-slate-400 truncate max-w-[220px]">
-                        💡 {card.actionableItem}
-                      </span>
-                      <button
-                        onClick={() => {
-                          setActiveTab("chat");
-                          handleSendMessage(`Tell me more about: ${card.title} (${card.actionableItem})`);
-                        }}
-                        className="text-xs font-semibold text-blue-400 hover:text-blue-300 flex items-center gap-1 transition-all flex-shrink-0"
-                      >
-                        Ask AI <ArrowRight className="w-3 h-3" />
-                      </button>
-                    </div>
-                  )}
+                  ))}
                 </div>
-              ))}
+              )}
             </div>
-          )}
-        </div>
-      )}
 
-      {/* TAB 2: AI CHAT */}
-      {activeTab === "chat" && (
-        <div className="space-y-4 animate-fade-in">
-          {/* Quick-Prompt Chips Carousel */}
-          <div className="flex gap-2 overflow-x-auto pb-2 touch-pan-x custom-scrollbar">
-            {QUICK_PROMPTS.map((chip, idx) => (
-              <button
-                key={idx}
-                onClick={() => handleSendMessage(chip.prompt)}
-                disabled={isTyping}
-                className="whitespace-nowrap px-3.5 py-1.5 rounded-full text-xs font-medium bg-slate-900/80 hover:bg-blue-500/20 text-slate-300 hover:text-blue-300 border border-white/10 hover:border-blue-500/30 transition-all flex items-center gap-1.5 flex-shrink-0 disabled:opacity-50"
-              >
-                {chip.label}
-              </button>
-            ))}
+            <p className="text-[11px] text-slate-500 text-center pt-2 border-t border-white/5">
+              Powered by Google Gemini (Priority 1) & Groq LLM Pipeline
+            </p>
           </div>
+        )}
 
-          {/* Container-Isolated Scroll Stream Box (NO Window Jump) */}
-          <div
-            ref={chatContainerRef}
-            className="overflow-y-auto max-h-[460px] custom-scrollbar p-4 space-y-4 rounded-2xl bg-slate-950/70 border border-white/10"
-          >
-            {messages.map((msg) => (
+        {/* TAB 2: AI CHAT */}
+        {activeTab === "chat" && (
+          <div className="space-y-4 animate-fade-in flex-1 flex flex-col justify-between">
+            <div className="space-y-4">
+              {/* Quick-Prompt Chips Carousel */}
+              <div className="flex gap-2 overflow-x-auto pb-2 touch-pan-x custom-scrollbar">
+                {QUICK_PROMPTS.map((chip, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => handleSendMessage(chip.prompt)}
+                    disabled={isTyping}
+                    className="whitespace-nowrap px-3.5 py-1.5 rounded-full text-xs font-medium bg-slate-900/80 hover:bg-blue-500/20 text-slate-300 hover:text-blue-300 border border-white/10 hover:border-blue-500/30 transition-all flex items-center gap-1.5 flex-shrink-0 disabled:opacity-50"
+                  >
+                    {chip.label}
+                  </button>
+                ))}
+              </div>
+
+              {/* Container-Isolated Scroll Stream Box (NO Window Jump) */}
               <div
-                key={msg.id}
-                className={`flex gap-3 ${
-                  msg.sender === "user" ? "justify-end" : "justify-start"
-                }`}
+                ref={chatContainerRef}
+                className="overflow-y-auto h-[380px] custom-scrollbar p-4 space-y-4 rounded-2xl bg-slate-950/70 border border-white/10"
               >
-                {/* Bot Avatar Badging */}
-                {msg.sender === "ai" && (
-                  <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-emerald-500 via-teal-500 to-cyan-500 flex items-center justify-center text-sm shadow-glow-sm flex-shrink-0 text-white mt-1">
-                    🤖
-                  </div>
-                )}
+                {messages.map((msg) => (
+                  <div
+                    key={msg.id}
+                    className={`flex gap-3 ${
+                      msg.sender === "user" ? "justify-end" : "justify-start"
+                    }`}
+                  >
+                    {/* Bot Avatar Badging */}
+                    {msg.sender === "ai" && (
+                      <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-emerald-500 via-teal-500 to-cyan-500 flex items-center justify-center text-sm shadow-glow-sm flex-shrink-0 text-white mt-1">
+                        🤖
+                      </div>
+                    )}
 
-                <div
-                  className={`max-w-[85%] rounded-2xl p-4 text-xs sm:text-sm leading-relaxed ${
-                    msg.sender === "user"
-                      ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-br-none shadow-lg"
-                      : "bg-slate-900/90 text-slate-200 border border-white/10 rounded-bl-none shadow-md"
-                  }`}
-                >
-                  {msg.sender === "user" ? (
-                    <p className="whitespace-pre-wrap font-medium">{msg.text}</p>
-                  ) : (
-                    <div className="prose prose-invert prose-sm max-w-none">
-                      <ReactMarkdown>{msg.text}</ReactMarkdown>
+                    <div
+                      className={`max-w-[85%] rounded-2xl p-4 text-xs sm:text-sm leading-relaxed ${
+                        msg.sender === "user"
+                          ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-br-none shadow-lg"
+                          : "bg-slate-900/90 text-slate-200 border border-white/10 rounded-bl-none shadow-md"
+                      }`}
+                    >
+                      {msg.sender === "user" ? (
+                        <p className="whitespace-pre-wrap font-medium">{msg.text}</p>
+                      ) : (
+                        <div className="prose prose-invert prose-sm max-w-none">
+                          <ReactMarkdown>{msg.text}</ReactMarkdown>
+                        </div>
+                      )}
+
+                      <div className="flex items-center justify-between gap-2 mt-2 pt-1 border-t border-white/10 text-[10px] text-slate-400">
+                        <span>{msg.timestamp}</span>
+                        {msg.providerUsed && (
+                          <span className="uppercase tracking-wider font-semibold text-emerald-400">
+                            {msg.providerUsed}
+                          </span>
+                        )}
+                      </div>
                     </div>
-                  )}
 
-                  <div className="flex items-center justify-between gap-2 mt-2 pt-1 border-t border-white/10 text-[10px] text-slate-400">
-                    <span>{msg.timestamp}</span>
-                    {msg.providerUsed && (
-                      <span className="uppercase tracking-wider font-semibold text-emerald-400">
-                        {msg.providerUsed}
-                      </span>
+                    {msg.sender === "user" && (
+                      <div className="w-8 h-8 rounded-xl bg-slate-800 border border-white/10 flex items-center justify-center text-xs font-bold text-slate-300 flex-shrink-0 mt-1">
+                        <User className="w-4 h-4 text-slate-300" />
+                      </div>
                     )}
                   </div>
-                </div>
+                ))}
 
-                {msg.sender === "user" && (
-                  <div className="w-8 h-8 rounded-xl bg-slate-800 border border-white/10 flex items-center justify-center text-xs font-bold text-slate-300 flex-shrink-0 mt-1">
-                    <User className="w-4 h-4 text-slate-300" />
+                {/* Typing Loader with Bot Avatar */}
+                {isTyping && (
+                  <div className="flex gap-3 items-center">
+                    <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-emerald-500 via-teal-500 to-cyan-500 flex items-center justify-center text-sm shadow-glow-sm flex-shrink-0 text-white">
+                      🤖
+                    </div>
+                    <div className="bg-slate-900 border border-white/10 rounded-2xl px-4 py-3 flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-bounce" style={{ animationDelay: "0ms" }} />
+                      <span className="w-2 h-2 rounded-full bg-teal-400 animate-bounce" style={{ animationDelay: "150ms" }} />
+                      <span className="w-2 h-2 rounded-full bg-cyan-400 animate-bounce" style={{ animationDelay: "300ms" }} />
+                    </div>
                   </div>
                 )}
               </div>
-            ))}
+            </div>
 
-            {/* Typing Loader with Bot Avatar */}
-            {isTyping && (
-              <div className="flex gap-3 items-center">
-                <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-emerald-500 via-teal-500 to-cyan-500 flex items-center justify-center text-sm shadow-glow-sm flex-shrink-0 text-white">
-                  🤖
-                </div>
-                <div className="bg-slate-900 border border-white/10 rounded-2xl px-4 py-3 flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-emerald-400 animate-bounce" style={{ animationDelay: "0ms" }} />
-                  <span className="w-2 h-2 rounded-full bg-teal-400 animate-bounce" style={{ animationDelay: "150ms" }} />
-                  <span className="w-2 h-2 rounded-full bg-cyan-400 animate-bounce" style={{ animationDelay: "300ms" }} />
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Chat Input & Controls */}
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              handleSendMessage();
-            }}
-            className="flex items-center gap-2"
-          >
-            <input
-              type="text"
-              value={inputQuery}
-              onChange={(e) => setInputQuery(e.target.value)}
-              placeholder="Ask QuantAI assistant anything..."
-              disabled={isTyping}
-              className="flex-1 bg-slate-900/90 border border-white/10 rounded-2xl px-4 py-3 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 disabled:opacity-50"
-            />
-            <button
-              type="submit"
-              disabled={!inputQuery.trim() || isTyping}
-              className="h-11 px-5 rounded-2xl bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white text-xs sm:text-sm font-semibold transition-all shadow-glow-sm flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            {/* Chat Input & Controls */}
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleSendMessage();
+              }}
+              className="flex items-center gap-2 pt-2"
             >
-              <span>Send</span>
-              <Send className="w-4 h-4" />
-            </button>
-          </form>
-        </div>
-      )}
+              <input
+                type="text"
+                value={inputQuery}
+                onChange={(e) => setInputQuery(e.target.value)}
+                placeholder="Ask QuantAI assistant anything..."
+                disabled={isTyping}
+                className="flex-1 bg-slate-900/90 border border-white/10 rounded-2xl px-4 py-3 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/50 disabled:opacity-50"
+              />
+              <button
+                type="submit"
+                disabled={!inputQuery.trim() || isTyping}
+                className="h-11 px-5 rounded-2xl bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white text-xs sm:text-sm font-semibold transition-all shadow-glow-sm flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <span>Send</span>
+                <Send className="w-4 h-4" />
+              </button>
+            </form>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
