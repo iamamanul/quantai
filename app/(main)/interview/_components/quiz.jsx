@@ -102,7 +102,7 @@ export default function Quiz({ provider = "gemini" }) {
         <div className="w-14 h-14 rounded-2xl bg-red-500/10 border border-red-500/20 flex items-center justify-center">
           <AlertCircle className="h-6 w-6 text-red-400" />
         </div>
-        <h3 className="font-semibold text-white">Could&apos;nt generate quiz</h3>
+        <h3 className="font-semibold text-white">Couldn&apos;t generate quiz</h3>
         <p className="text-sm text-muted-foreground max-w-xs">{quizData.error || quizData}</p>
         <Button onClick={startNewQuiz} variant="outline" className="border-white/10 mt-2">
           <RefreshCw className="mr-2 h-4 w-4" /> Try Again
